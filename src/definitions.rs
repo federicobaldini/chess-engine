@@ -29,3 +29,56 @@ pub enum Squares {
   A7 = 81, B7, C7, D7, E7, F7, G7, H7,
   A8 = 91, B8, C8, D8, E8, F8, G8, H8, NoSquare
 }
+
+pub struct Board {
+  pieces: [u8; BOARD_SQUARE_NUMBER],
+  /**
+   * The pawns are stored in a bitboard where each square is a bit - hence 64 bits
+   * The reason for using bitboards for the pawns was twofold. 
+   * 1. To show bitboards, so setting moving and clearing bits. 
+   * 2. It makes evaluation of pawn structures easier as you can use bit masks.
+   * So we'll have three bitboards, once with the white pawns, another with the black pawns
+   * and a third with both color pawns (intersection)
+   */
+  pawns: [u64; 3],
+  /**
+   * Black or white.
+   */
+  king_square: [u8; 2],
+  side: u8,
+  en_passant_square: u8,
+  /**
+   * Fifty moves counter for draw, in our case will be hundred moves because we'll
+   * using half moves and not full moves.
+   */
+  fifty_full_moves: u32,
+  /**
+   * The counter of how many half moves are into the current search.
+   */
+  actual_half_moves: u32,
+  /**
+   * The counter of the total half moves played. It's needed for
+   * looking back and determining repetitions when we'll come to storing our history.
+   */
+  total_half_moves: u32,
+  /**
+   * It's a unique key which is generated for each game position.
+   */
+  position_key: u64,
+  /**
+   * The number of pieces that are on the board. Indexed by piece type (SquareStatus enum).
+   */
+  actual_pieces_number: [u8; 13],
+  /**
+   * Thery are every pieces that are not a pawn. Array size is three for black, white or both.
+   */
+  big_pieces_number: [u8; 3],
+  /**
+   * Rooks and Queens. Array size is three for black, white or both.
+   */
+  major_pieces_number: [u8; 3],
+  /**
+   * Bishops and Knights. Array size is three for black, white or both.
+   */
+  minor_pieces_number: [u8; 3]
+}
