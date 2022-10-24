@@ -1,5 +1,6 @@
 pub const PROGRAM_NAME: &str = "Rust Chess Engine";
 pub const BOARD_SQUARE_NUMBER: usize = 120;
+pub const MAX_GAME_HALF_MOVES: usize = 2048;
 
 // A square can be empty or contain a Wn (White kNight) chess piece for example
 pub enum SquareStatus {
@@ -30,8 +31,43 @@ pub enum Squares {
   A8 = 91, B8, C8, D8, E8, F8, G8, H8, NoSquare
 }
 
+/**
+ * They are rappresented by 4 bits. Ex. bit 1 -> [1 0 0 0]; bit 4 -> [0 0 1 0].
+ * The case [1 0 0 1] tell us that white castel on king side and black castel on queen side.
+ */
+pub enum Castle {
+  WhiteKingSideCastel = 1,
+  WhiteQueenSideCastel = 2,
+  BlackKingSideCastel = 4,
+  BlackQueenSideCastel = 8,
+}
+
+pub struct Undo {
+  /**
+   * The move made.
+   */
+  half_move: i32,
+  /**
+   * Before the move has made.
+   */
+  castle_permission: i32,
+  /**
+   * Before the move has made.
+   */
+  en_passant_square: i32,
+  /**
+   * Fifty moves counter for draw, in our case will be hundred moves because we'll
+   * using half moves and not full moves. Before the move has made.
+   */
+  fifty_full_moves: i32,
+  /**
+   * It's a unique key which is generated for each game position. Before the move has made.
+   */
+  position_key: i64,
+}
+
 pub struct Board {
-  pieces: [u8; BOARD_SQUARE_NUMBER],
+  pieces: [i32; BOARD_SQUARE_NUMBER],
   /**
    * The pawns are stored in a bitboard where each square is a bit - hence 64 bits
    * The reason for using bitboards for the pawns was twofold. 
@@ -40,45 +76,85 @@ pub struct Board {
    * So we'll have three bitboards, once with the white pawns, another with the black pawns
    * and a third with both color pawns (intersection)
    */
-  pawns: [u64; 3],
+  pawns: [i64; 3],
   /**
    * Black or white.
    */
-  king_square: [u8; 2],
-  side: u8,
-  en_passant_square: u8,
+  king_square: [i32; 2],
+  side: i32,
+  en_passant_square: i32,
   /**
    * Fifty moves counter for draw, in our case will be hundred moves because we'll
    * using half moves and not full moves.
    */
-  fifty_full_moves: u32,
+  fifty_full_moves: i32,
   /**
    * The counter of how many half moves are into the current search.
    */
-  actual_half_moves: u32,
+  actual_half_moves: i32,
   /**
    * The counter of the total half moves played. It's needed for
    * looking back and determining repetitions when we'll come to storing our history.
    */
-  total_half_moves: u32,
+  total_half_moves: i32,
+  castel_permission: i32,
   /**
    * It's a unique key which is generated for each game position.
    */
-  position_key: u64,
+  position_key: i64,
   /**
    * The number of pieces that are on the board. Indexed by piece type (SquareStatus enum).
    */
-  actual_pieces_number: [u8; 13],
+  actual_pieces_number: [i32; 13],
   /**
    * Thery are every pieces that are not a pawn. Array size is three for black, white or both.
    */
-  big_pieces_number: [u8; 3],
+  big_pieces_number: [i32; 3],
   /**
    * Rooks and Queens. Array size is three for black, white or both.
    */
-  major_pieces_number: [u8; 3],
+  major_pieces_number: [i32; 3],
   /**
    * Bishops and Knights. Array size is three for black, white or both.
    */
-  minor_pieces_number: [u8; 3]
+  minor_pieces_number: [i32; 3],
+  history: [Undo; MAX_GAME_HALF_MOVES],
 }
+
+/* MACROS */
+
+/**
+ * f -> board file
+ * r -> board rank
+ */
+#[macro_export]
+macro_rules! file_rank_to_square_120 {
+  ( $f:expr, $r:expr ) => {
+    (21 + $f) + ($r * 10)
+  };
+}
+
+/* GLOBALS */
+
+pub struct Definitions {
+  square_120_to_square_64: [i32; BOARD_SQUARE_NUMBER],
+  square_64_to_square_120: [i32; 64],
+}
+
+impl Definitions {
+  pub fn new() -> Definitions {
+    let square_120_to_square_64: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
+    let square_64_to_square_120: [i32; 64] = [0; 64];
+    Definitions {square_120_to_square_64, square_64_to_square_120}
+  }
+
+  pub fn square_120_to_square_64(&mut self) -> &mut[i32; BOARD_SQUARE_NUMBER] {
+    &mut self.square_120_to_square_64
+  }
+
+  pub fn square_64_to_square_120(&mut self) -> &mut[i32; 64] {
+    &mut self.square_64_to_square_120
+  }
+}
+
+/* FUNCTIONS */
