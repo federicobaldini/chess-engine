@@ -1,7 +1,7 @@
 use crate::definitions::*;
 use crate::file_rank_to_square_120;
 
-fn init_square_120_to_square_64(definitions: &mut Definitions) {
+fn init_squares(definitions: &mut Definitions) {
   let mut square_120: i32;
   let mut square_64: i32 = 0;
 
@@ -19,5 +19,5 @@ fn init_square_120_to_square_64(definitions: &mut Definitions) {
 }
 
 pub fn init(definitions: &mut Definitions) {
-  init_square_120_to_square_64(definitions);
+  init_squares(definitions);
 }
