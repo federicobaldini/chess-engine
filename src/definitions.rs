@@ -3,7 +3,7 @@ pub const BOARD_SQUARE_NUMBER: usize = 120;
 pub const MAX_GAME_HALF_MOVES: usize = 2048;
 
 // A square can be empty or contain a Wn (White kNight) chess piece for example
-pub enum SquareStatus {
+pub enum Pieces {
   Empty, Wp, Wn, Wb, Wr, Wq, Wk, Bp, Bn, Bb, Br, Bq, Bk,
 }
 
@@ -67,6 +67,9 @@ pub struct Undo {
 }
 
 pub struct Board {
+  /**
+  * It contains the whole chess board squares, and for each square contains the chess piece on it (Empty if none). 
+  */
   pieces: [i32; BOARD_SQUARE_NUMBER],
   /**
    * The pawns are stored in a bitboard where each square is a bit - hence 64 bits
@@ -103,11 +106,11 @@ pub struct Board {
    */
   position_key: i64,
   /**
-   * The number of pieces that are on the board. Indexed by piece type (SquareStatus enum).
+   * The number of pieces that are on the board. Indexed by piece type (Pieces enum).
    */
   actual_pieces_number: [i32; 13],
   /**
-   * Thery are every pieces that are not a pawn. Array size is three for black, white or both.
+   * They are every pieces that are not a pawn. Array size is three for black, white or both.
    */
   big_pieces_number: [i32; 3],
   /**
@@ -119,6 +122,16 @@ pub struct Board {
    */
   minor_pieces_number: [i32; 3],
   history: [Undo; MAX_GAME_HALF_MOVES],
+  /**
+   * It's an array of 10 elements, eachone contains the list of piece types (13).
+   * Why ten elements? Because for example at the start of the game you have 2 rooks, assumed
+   * that you promote all the pawns at rook, you can have at maximum 10 equal pieces.
+   * Use case: to set the first white knight to E3 -> pieces_list[Pieces::Wn][0] = ChessboardFiles::E + ChessboardRanks::R3
+   * This structure is more usefull (in some cases) that Definitions::pieces because here we have
+   * less empty squares and to get all the pieces on the board is sufficient to loop every piece type untill
+   * we get NoSquare as square value. So it's increment the performance of the search move engine.
+   */
+  pieces_list: [[i32; 13]; 10],
 }
 
 /* MACROS */
