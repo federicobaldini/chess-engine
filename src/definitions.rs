@@ -150,23 +150,23 @@ macro_rules! file_rank_to_square_120 {
 /* GLOBALS */
 
 pub struct Definitions {
-  square_120_to_square_64: [i32; BOARD_SQUARE_NUMBER],
-  square_64_to_square_120: [i32; 64],
+  board_120_squares: [i32; BOARD_SQUARE_NUMBER],
+  board_64_squares: [i32; 64],
 }
 
 impl Definitions {
   pub fn new() -> Definitions {
-    let square_120_to_square_64: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
-    let square_64_to_square_120: [i32; 64] = [0; 64];
-    Definitions {square_120_to_square_64, square_64_to_square_120}
+    let board_120_squares: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
+    let board_64_squares: [i32; 64] = [0; 64];
+    Definitions {board_120_squares, board_64_squares}
   }
 
-  pub fn square_120_to_square_64(&mut self) -> &mut[i32; BOARD_SQUARE_NUMBER] {
-    &mut self.square_120_to_square_64
+  pub fn board_120_squares(&mut self) -> &mut[i32; BOARD_SQUARE_NUMBER] {
+    &mut self.board_120_squares
   }
 
-  pub fn square_64_to_square_120(&mut self) -> &mut[i32; 64] {
-    &mut self.square_64_to_square_120
+  pub fn board_64_squares(&mut self) -> &mut[i32; 64] {
+    &mut self.board_64_squares
   }
 }
 
