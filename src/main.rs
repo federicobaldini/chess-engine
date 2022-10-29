@@ -23,6 +23,6 @@ fn main() {
       definitions::ChessboardFiles::G as i32,
       definitions::ChessboardRanks::R3 as i32
     ) as usize];
-  println!("G2 pawn added to the bitboard!\n");
+  println!("G3 pawn added to the bitboard!\n");
   bitboards::print_bit_board(&mut definitions, test_bit_board);
 }
