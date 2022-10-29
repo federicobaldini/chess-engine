@@ -1,31 +1,28 @@
+mod bitboards;
 mod definitions;
 mod init;
 
 fn main() {
   let mut definitions = definitions::Definitions::new();
-  
+  let mut test_bit_board: u64 = 0u64;
+
   init::init(&mut definitions);
 
-  for square in 0..definitions.square_120_to_square_64().len() {
-    if square % 10 == 0 {
-      println!();
-    }
-    print!(
-      "{} ",
-      definitions.square_120_to_square_64()[square as usize]
-    );
-  }
+  // bitwise operations
+  test_bit_board |= 1u64
+    << definitions.board_120_squares()[file_rank_to_square_120!(
+      definitions::ChessboardFiles::D as i32,
+      definitions::ChessboardRanks::R2 as i32
+    ) as usize];
+  println!("D2 pawn added to the bitboard!\n");
+  bitboards::print_bit_board(&mut definitions, test_bit_board);
 
-  println!();
-  println!();
-
-  for square in 0..definitions.square_64_to_square_120().len() {
-    if square % 8 == 0 {
-      println!();
-    }
-    print!(
-      "{} ",
-      definitions.square_64_to_square_120()[square as usize]
-    );
-  }
+  // bitwise operations
+  test_bit_board |= 1u64
+    << definitions.board_120_squares()[file_rank_to_square_120!(
+      definitions::ChessboardFiles::G as i32,
+      definitions::ChessboardRanks::R3 as i32
+    ) as usize];
+  println!("G2 pawn added to the bitboard!\n");
+  bitboards::print_bit_board(&mut definitions, test_bit_board);
 }
