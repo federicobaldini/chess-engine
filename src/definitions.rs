@@ -32,7 +32,7 @@ pub enum Squares {
 }
 
 /**
- * They are rappresented by 4 bits. Ex. bit 1 -> [1 0 0 0]; bit 4 -> [0 0 1 0].
+ * They are rapresented by 4 bits. Ex. bit 1 -> [1 0 0 0]; bit 4 -> [0 0 1 0].
  * The case [1 0 0 1] tell us that white castel on king side and black castel on queen side.
  */
 pub enum Castle {
@@ -68,16 +68,18 @@ pub struct Undo {
 
 pub struct Board {
   /**
-  * It contains the whole chess board squares, and for each square contains the chess piece on it (Empty if none). 
-  */
+   * It contains the whole chess board squares, and for each square contains the chess piece on it (Empty if none).
+   */
   pieces: [i32; BOARD_SQUARE_NUMBER],
   /**
    * The pawns are stored in a bitboard where each square is a bit - hence 64 bits
-   * The reason for using bitboards for the pawns was twofold. 
-   * 1. To show bitboards, so setting moving and clearing bits. 
+   * The reason for using bitboards for the pawns was twofold.
+   * 1. To show bitboards, so setting moving and clearing bits.
    * 2. It makes evaluation of pawn structures easier as you can use bit masks.
    * So we'll have three bitboards, once with the white pawns, another with the black pawns
-   * and a third with both color pawns (intersection)
+   * and a third with both color pawns (intersection).
+   * We could rapresent every chess piece on a bitboard (maybe in the future will be done), but
+   * the pawns give the most performance improvement.
    */
   pawns: [i64; 3],
   /**
@@ -150,23 +152,62 @@ macro_rules! file_rank_to_square_120 {
 /* GLOBALS */
 
 pub struct Definitions {
-  board_120_squares: [i32; BOARD_SQUARE_NUMBER],
-  board_64_squares: [i32; 64],
+  /**
+   * The board with 120 squares is the board reference for the search engine.
+   * Check out why we need to change the boards squares notation on the init_squares() function
+   * inside the init.rs file.
+   *
+   * Original structure of definitions.board_120_squares_in_64_squares_notation,
+   * more like "board_120_squares_in_120_squares_notation" (as we play with black):
+   *      A    B    C    D    E    F    G    H
+   *    000  001  002  003  004  005  006  007  008  009
+   *    010  011  012  013  014  015  016  017  018  019
+   * 1  020  021  022  023  024  025  026  027  028  029
+   * 2  030  031  032  033  034  035  036  037  038  039
+   * 3  040  041  042  043  044  045  046  047  048  049
+   * 4  050  051  052  053  054  055  056  057  058  059
+   * 5  060  061  062  063  064  065  066  067  068  069
+   * 6  070  071  072  073  074  075  076  077  078  079
+   * 7  080  081  082  083  084  085  086  087  088  089
+   * 8  090  091  092  093  094  095  096  097  098  099
+   *    100  101  102  103  104  105  106  107  108  109
+   *    110  111  112  113  114  115  116  117  118  119
+   */
+  board_120_squares_in_64_squares_notation: [i32; BOARD_SQUARE_NUMBER],
+  /**
+   * Original structure of definitions.board_64_squares_in_120_squares_notation,
+   * more like "board_64_squares_in_64_squares_notation" (as we play with black):
+   *
+   *     A  B  C  D  E  F  G  H
+   * 1  00 01 02 03 04 05 06 07
+   * 2  08 09 10 11 12 13 14 15
+   * 3  16 17 18 19 20 21 22 23
+   * 4  24 25 26 27 28 29 30 31
+   * 5  32 33 34 35 36 37 38 39
+   * 6  40 41 42 43 44 45 46 47
+   * 7  48 49 50 51 52 53 54 55
+   * 8  56 57 58 59 60 61 62 63
+   */
+  board_64_squares_in_120_squares_notation: [i32; 64],
 }
 
 impl Definitions {
   pub fn new() -> Definitions {
-    let board_120_squares: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
-    let board_64_squares: [i32; 64] = [0; 64];
-    Definitions {board_120_squares, board_64_squares}
+    let board_120_squares_in_64_squares_notation: [i32; BOARD_SQUARE_NUMBER] =
+      [0; BOARD_SQUARE_NUMBER];
+    let board_64_squares_in_120_squares_notation: [i32; 64] = [0; 64];
+    Definitions {
+      board_120_squares_in_64_squares_notation,
+      board_64_squares_in_120_squares_notation,
+    }
   }
 
-  pub fn board_120_squares(&mut self) -> &mut[i32; BOARD_SQUARE_NUMBER] {
-    &mut self.board_120_squares
+  pub fn board_120_squares_in_64_squares_notation(&mut self) -> &mut [i32; BOARD_SQUARE_NUMBER] {
+    &mut self.board_120_squares_in_64_squares_notation
   }
 
-  pub fn board_64_squares(&mut self) -> &mut[i32; 64] {
-    &mut self.board_64_squares
+  pub fn board_64_squares_in_120_squares_notation(&mut self) -> &mut [i32; 64] {
+    &mut self.board_64_squares_in_120_squares_notation
   }
 }
 
