@@ -189,6 +189,8 @@ pub struct Definitions {
    * 8  56 57 58 59 60 61 62 63
    */
   board_64_squares_in_120_squares_notation: [i32; 64],
+  bit_mask_to_set_bit_inside_bitboard: [u64; 64],
+  bit_mask_to_clear_bit_inside_bitboard: [u64; 64],
 }
 
 impl Definitions {
@@ -196,9 +198,14 @@ impl Definitions {
     let board_120_squares_in_64_squares_notation: [i32; BOARD_SQUARE_NUMBER] =
       [0; BOARD_SQUARE_NUMBER];
     let board_64_squares_in_120_squares_notation: [i32; 64] = [0; 64];
+    let bit_mask_to_set_bit_inside_bitboard: [u64; 64] = [0; 64];
+    let bit_mask_to_clear_bit_inside_bitboard: [u64; 64] = [0; 64];
+
     Definitions {
       board_120_squares_in_64_squares_notation,
       board_64_squares_in_120_squares_notation,
+      bit_mask_to_set_bit_inside_bitboard,
+      bit_mask_to_clear_bit_inside_bitboard
     }
   }
 
@@ -208,6 +215,14 @@ impl Definitions {
 
   pub fn board_64_squares_in_120_squares_notation(&mut self) -> &mut [i32; 64] {
     &mut self.board_64_squares_in_120_squares_notation
+  }
+
+  pub fn bit_mask_to_set_bit_inside_bitboard(&mut self) -> &mut [u64; 64] {
+    &mut self.bit_mask_to_set_bit_inside_bitboard
+  }
+
+  pub fn bit_mask_to_clear_bit_inside_bitboard(&mut self) -> &mut [u64; 64] {
+    &mut self.bit_mask_to_clear_bit_inside_bitboard
   }
 }
 
