@@ -2,27 +2,27 @@ use crate::definitions::*;
 use crate::file_rank_to_square_120;
 
 /**
- * The board with 120 squares is the board reference for the search engine. 
- * 
+ * The board with 120 squares is the board reference for the search engine.
+ *
  * We need to have the 120 squares board and the 64 squares board as follow for these reasons:
- * 
+ *
  * When we have a 64 squares bitboard we can have for example a bit on square B2.
- * 
+ *
  * The B2 square has position at index 9 in the array board with 64 squares in 64 squares notation.
  * (reference: "board_64_squares_in_64_squares_notation" in definitions.rs file).
- * 
+ *
  * Because we need to have that position on the 120 squares board,
- * 
+ *
  * the index 9 not correspond to B2 square, it stays at index 32 in the 120 squares notation.
  * (reference: "board_120_squares_in_120_squares_notation" in definitions.rs file).
- * 
+ *
  * So if we have a board of 64 squares in 120 squares notation, at index 9 we got 32, then
  * the 32 as index on the 120 squares board in 64 squares notation it's the B2 square and contains the 9 value,
  * the square that originally we wanted arrive to on the 120 squares board.
- * 
+ *
  * The value that we got can help us to reverse the process and get the B2 square on 64 squares board,
  * that is the square at index 9.
- * 
+ *
  * Final structure of definitions.board_64_squares_in_120_squares_notation (as we play with black):
  *
  *     A  B  C  D  E  F  G  H
@@ -67,6 +67,16 @@ fn init_squares(definitions: &mut Definitions) {
   }
 }
 
+fn init_masks(definitions: &mut Definitions) {
+  for index in 0..64 {
+    definitions.bit_mask_to_set_bit_inside_bitboard()[index as usize] |= 1u64 << index;
+    // It is the bitwise complement of the "bit_mask_to_set_bit_inside_bitboard"
+    definitions.bit_mask_to_clear_bit_inside_bitboard()[index as usize] =
+      !definitions.bit_mask_to_set_bit_inside_bitboard()[index as usize];
+  }
+}
+
 pub fn init(definitions: &mut Definitions) {
   init_squares(definitions);
+  init_masks(definitions);
 }
