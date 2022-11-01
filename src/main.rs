@@ -4,21 +4,30 @@ mod init;
 
 fn main() {
   let mut definitions = definitions::Definitions::new();
-  let mut test_bit_board: u64 = 0u64;
+  let mut test_bitboard: u64 = 0u64;
 
   init::init(&mut definitions);
 
-  test_bit_board |= 1u64
-    << definitions.board_120_squares_in_64_squares_notation()[(definitions::Squares::D2) as usize];
-  test_bit_board |= 1u64
-    << definitions.board_120_squares_in_64_squares_notation()[(definitions::Squares::D3) as usize];
-  test_bit_board |= 1u64
-    << definitions.board_120_squares_in_64_squares_notation()[(definitions::Squares::D4) as usize];
+  /*
+  let set_mask = definitions.bit_mask_to_set_bit_inside_bitboard().clone();
+  let clear_mask = definitions.bit_mask_to_clear_bits_inside_bitboard().clone();
 
-  bitboards::print_bit_board(&mut definitions, test_bit_board);
+  for index in 0..64 {
+    println!("Index: {}", index);
+    bitboards::print_bitboard(&mut definitions, set_mask[index as usize]);
+    println!();
+  }
 
-  println!("Count: {}", bitboards::count_bits(test_bit_board));
-  println!("Index: {}", bitboards::pop_first_bit(&mut test_bit_board));
+  for index in 0..64 {
+    println!("Index: {}", index);
+    bitboards::print_bitboard(&mut definitions, clear_mask[index as usize]);
+    println!();
+  }
+  */
 
-  bitboards::print_bit_board(&mut definitions, test_bit_board);
+  bitboards::set_bit_to_bitboard(&mut definitions, &mut test_bitboard, 61);
+  bitboards::print_bitboard(&mut definitions, test_bitboard);
+
+  bitboards::clear_bit_to_bitboard(&mut definitions, &mut test_bitboard, 61);
+  bitboards::print_bitboard(&mut definitions, test_bitboard);
 }
