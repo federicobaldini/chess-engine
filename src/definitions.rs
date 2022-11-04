@@ -3,8 +3,29 @@ pub const BOARD_SQUARE_NUMBER: usize = 120;
 pub const MAX_GAME_HALF_MOVES: usize = 2048;
 
 // A square can be empty or contain a Wn (White kNight) chess piece for example
+#[derive(Copy, Clone)]
 pub enum Pieces {
   Empty, Wp, Wn, Wb, Wr, Wq, Wk, Bp, Bn, Bb, Br, Bq, Bk,
+
+impl Pieces {
+  pub fn from_u32(value: u32) -> Pieces {
+    match value {
+      0 => Pieces::Empty,
+      1 => Pieces::Wp,
+      2 => Pieces::Wn,
+      3 => Pieces::Wb,
+      4 => Pieces::Wr,
+      5 => Pieces::Wq,
+      6 => Pieces::Wk,
+      7 => Pieces::Bp,
+      8 => Pieces::Bn,
+      9 => Pieces::Bb,
+      10 => Pieces::Br,
+      11 => Pieces::Bq,
+      12 => Pieces::Bk,
+      _ => panic!("Unknown value: {}", value),
+    }
+  }
 }
 
 pub enum ChessboardFiles {
@@ -16,10 +37,12 @@ pub enum ChessboardRanks {
   R1, R2, R3, R4, R5, R6, R7, R8, None
 }
 
+#[derive(Copy, Clone)]
 pub enum Colors {
   White, Black, Both
 }
 
+#[derive(Copy, Clone)]
 pub enum Squares {
   A1 = 21, B1, C1, D1, E1, F1, G1, H1,
   A2 = 31, B2, C2, D2, E2, F2, G2, H2,
@@ -63,7 +86,25 @@ pub struct Undo {
   /**
    * It's a unique key which is generated for each game position. Before the move has made.
    */
-  position_key: i64,
+  position_key: u64,
+}
+
+impl Undo {
+  pub fn new() -> Undo {
+    let half_move: i32 = 0;
+    let castle_permission: i32 = 0;
+    let en_passant_square: i32 = 0;
+    let fifty_full_moves: i32 = 0;
+    let position_key: u64 = 0;
+
+    Undo {
+      half_move,
+      castle_permission,
+      en_passant_square,
+      fifty_full_moves,
+      position_key,
+    }
+  }
 }
 
 pub struct Board {
@@ -81,13 +122,13 @@ pub struct Board {
    * We could rapresent every chess piece on a bitboard (maybe in the future will be done), but
    * the pawns give the most performance improvement.
    */
-  pawns: [i64; 3],
+  pawns: [u64; 3],
   /**
    * Black or white.
    */
   king_square: [i32; 2],
-  side: i32,
-  en_passant_square: i32,
+  side: Colors,
+  en_passant_square: Squares,
   /**
    * Fifty moves counter for draw, in our case will be hundred moves because we'll
    * using half moves and not full moves.
@@ -106,7 +147,7 @@ pub struct Board {
   /**
    * It's a unique key which is generated for each game position.
    */
-  position_key: i64,
+  position_key: u64,
   /**
    * The number of pieces that are on the board. Indexed by piece type (Pieces enum).
    */
@@ -123,7 +164,7 @@ pub struct Board {
    * Bishops and Knights. Array size is three for black, white or both.
    */
   minor_pieces_number: [i32; 3],
-  history: [Undo; MAX_GAME_HALF_MOVES],
+  history: Vec<Undo>,
   /**
    * It's an array of 10 elements, eachone contains the list of piece types (13).
    * Why ten elements? Because for example at the start of the game you have 2 rooks, assumed
@@ -134,6 +175,64 @@ pub struct Board {
    * we get NoSquare as square value. So it's increment the performance of the search move engine.
    */
   pieces_list: [[i32; 13]; 10],
+}
+
+impl Board {
+  pub fn new() -> Board {
+    let pieces: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
+    let pawns: [u64; 3] = [0; 3];
+    let king_square: [i32; 2] = [0; 2];
+    let side: Colors = Colors::White;
+    let en_passant_square: Squares = Squares::NoSquare;
+    let fifty_full_moves: i32 = 0;
+    let actual_half_moves: i32 = 0;
+    let total_half_moves: i32 = 0;
+    let castel_permission: i32 = 0;
+    let position_key: u64 = 0;
+    let actual_pieces_number: [i32; 13] = [0; 13];
+    let big_pieces_number: [i32; 3] = [0; 3];
+    let major_pieces_number: [i32; 3] = [0; 3];
+    let minor_pieces_number: [i32; 3] = [0; 3];
+    let history: Vec<Undo> = Vec::with_capacity(MAX_GAME_HALF_MOVES); // to initialize
+    let pieces_list: [[i32; 13]; 10] = [
+      [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13],
+    ];
+
+    Board {
+      pieces,
+      pawns,
+      king_square,
+      side,
+      en_passant_square,
+      fifty_full_moves,
+      actual_half_moves,
+      total_half_moves,
+      castel_permission,
+      position_key,
+      actual_pieces_number,
+      big_pieces_number,
+      major_pieces_number,
+      minor_pieces_number,
+      history,
+      pieces_list,
+    }
+  }
+
+  pub fn pieces(&mut self) -> &mut [i32; BOARD_SQUARE_NUMBER] {
+    &mut self.pieces
+  }
+
+  pub fn side(&mut self) -> Colors {
+    self.side
+  }
+
+  pub fn en_passant_square(&mut self) -> Squares {
+    self.en_passant_square
+  }
+
+  pub fn castel_permission(&mut self) -> i32 {
+    self.castel_permission
+  }
 }
 
 /* MACROS */
@@ -191,6 +290,9 @@ pub struct Definitions {
   board_64_squares_in_120_squares_notation: [i32; 64],
   bit_mask_to_set_bit_inside_bitboard: [u64; 64],
   bit_mask_to_clear_bit_inside_bitboard: [u64; 64],
+  piece_keys: [[u64; 120]; 13],
+  side_key: u64,
+  castle_keys: [u64; 16],
 }
 
 impl Definitions {
@@ -200,12 +302,21 @@ impl Definitions {
     let board_64_squares_in_120_squares_notation: [i32; 64] = [0; 64];
     let bit_mask_to_set_bit_inside_bitboard: [u64; 64] = [0; 64];
     let bit_mask_to_clear_bit_inside_bitboard: [u64; 64] = [0; 64];
+    let piece_keys: [[u64; 120]; 13] = [
+      [0; 120], [0; 120], [0; 120], [0; 120], [0; 120], [0; 120], [0; 120], [0; 120], [0; 120],
+      [0; 120], [0; 120], [0; 120], [0; 120],
+    ];
+    let side_key: u64 = 0;
+    let castle_keys: [u64; 16] = [0; 16];
 
     Definitions {
       board_120_squares_in_64_squares_notation,
       board_64_squares_in_120_squares_notation,
       bit_mask_to_set_bit_inside_bitboard,
-      bit_mask_to_clear_bit_inside_bitboard
+      bit_mask_to_clear_bit_inside_bitboard,
+      piece_keys,
+      side_key,
+      castle_keys,
     }
   }
 
@@ -223,6 +334,18 @@ impl Definitions {
 
   pub fn bit_mask_to_clear_bit_inside_bitboard(&mut self) -> &mut [u64; 64] {
     &mut self.bit_mask_to_clear_bit_inside_bitboard
+  }
+
+  pub fn piece_keys(&mut self) -> &mut [[u64; 120]; 13] {
+    &mut self.piece_keys
+  }
+
+  pub fn side_key(&mut self) -> &mut u64 {
+    &mut self.side_key
+  }
+
+  pub fn castle_keys(&mut self) -> &mut [u64; 16] {
+    &mut self.castle_keys
   }
 }
 
