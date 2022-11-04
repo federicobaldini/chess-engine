@@ -1,5 +1,6 @@
 use crate::definitions::*;
 use crate::file_rank_to_square_120;
+use rand::Rng;
 
 /**
  * The board with 120 squares is the board reference for the search engine.
@@ -76,7 +77,25 @@ fn init_masks(definitions: &mut Definitions) {
   }
 }
 
+fn generate_random_chess_piece_hash() -> u64 {
+  let mut rng = rand::thread_rng();
+  rng.gen::<u64>()
+}
+
+fn init_hash_keys(definitions: &mut Definitions) {
+  for index_1 in 0..13 {
+    for index_2 in 0..120 {
+      definitions.piece_keys()[index_1][index_2] = generate_random_chess_piece_hash();
+    }
+  }
+  *definitions.side_key() = generate_random_chess_piece_hash();
+  for index in 0..16 {
+    definitions.castle_keys()[index] = generate_random_chess_piece_hash();
+  }
+}
+
 pub fn init(definitions: &mut Definitions) {
   init_squares(definitions);
   init_masks(definitions);
+  init_hash_keys(definitions)
 }
