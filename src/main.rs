@@ -1,33 +1,40 @@
 mod bitboards;
 mod definitions;
+mod hashkeys;
 mod init;
+use rand::Rng;
 
 fn main() {
   let mut definitions = definitions::Definitions::new();
-  let mut test_bitboard: u64 = 0u64;
-
-  init::init(&mut definitions);
 
   /*
-  let set_mask = definitions.bit_mask_to_set_bit_inside_bitboard().clone();
-  let clear_mask = definitions.bit_mask_to_clear_bits_inside_bitboard().clone();
+  let mut rng = rand::thread_rng();
 
-  for index in 0..64 {
-    println!("Index: {}", index);
-    bitboards::print_bitboard(&mut definitions, set_mask[index as usize]);
-    println!();
-  }
+  let piece_one: i32 = rng.gen();
+  let piece_two: i32 = rng.gen();
+  let piece_three: i32 = rng.gen();
+  let piece_four: i32 = rng.gen();
 
-  for index in 0..64 {
-    println!("Index: {}", index);
-    bitboards::print_bitboard(&mut definitions, clear_mask[index as usize]);
-    println!();
-  }
+  println!("Piece one: {:X?}", piece_one);
+  println!("Piece two: {:X?}", piece_two);
+  println!("Piece three: {:X?}", piece_three);
+  println!("Piece four: {:X?}", piece_four);
+
+  let key = piece_one ^ piece_two ^ piece_four;
+  let mut temp_key = piece_one;
+  temp_key ^= piece_three;
+  temp_key ^= piece_four;
+  temp_key ^= piece_two;
+
+  println!("Key: {:X?}", key);
+  println!("Temp key: {:X?}", temp_key);
+
+  temp_key ^= piece_three;
+  println!("(three out) temp key: {:X?}", temp_key);
+
+  temp_key ^= piece_three;
+  println!("(three in) temp key: {:X?}", temp_key);
   */
 
-  bitboards::set_bit_to_bitboard(&mut definitions, &mut test_bitboard, 61);
-  bitboards::print_bitboard(&mut definitions, test_bitboard);
-
-  bitboards::clear_bit_to_bitboard(&mut definitions, &mut test_bitboard, 61);
-  bitboards::print_bitboard(&mut definitions, test_bitboard);
+  init::init(&mut definitions);
 }
