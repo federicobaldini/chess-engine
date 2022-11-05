@@ -223,6 +223,10 @@ impl Board {
     &mut self.pieces
   }
 
+  pub fn pawns(&mut self) -> &mut [u64; 3] {
+    &mut self.pawns
+  }
+
   pub fn side(&mut self) -> Colors {
     self.side
   }
@@ -233,6 +237,18 @@ impl Board {
 
   pub fn castel_permission(&mut self) -> i32 {
     self.castel_permission
+  }
+
+  pub fn big_pieces_number(&mut self) -> &mut [i32; 3] {
+    &mut self.big_pieces_number
+  }
+
+  pub fn major_pieces_number(&mut self) -> &mut [i32; 3] {
+    &mut self.major_pieces_number
+  }
+
+  pub fn minor_pieces_number(&mut self) -> &mut [i32; 3] {
+    &mut self.minor_pieces_number
   }
 }
 
