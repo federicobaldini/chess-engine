@@ -1,4 +1,5 @@
 mod bitboards;
+mod board;
 mod definitions;
 mod hashkeys;
 mod init;
