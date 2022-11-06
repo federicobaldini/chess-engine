@@ -11,16 +11,16 @@ fn generate_position_key(definitions: &mut Definitions, board: &mut Board) -> u6
     }
   }
 
-  if board.side() as i32 == Colors::White as i32 {
+  if *board.side() as i32 == Colors::White as i32 {
     final_key ^= *definitions.side_key();
   }
 
-  if board.en_passant_square() as i32 != Squares::NoSquare as i32 {
+  if *board.en_passant_square() as i32 != Squares::NoSquare as i32 {
     final_key ^=
-      definitions.piece_keys()[Pieces::Empty as usize][board.en_passant_square() as usize];
+      definitions.piece_keys()[Pieces::Empty as usize][*board.en_passant_square() as usize];
   }
 
-  final_key ^= definitions.castle_keys()[board.castel_permission() as usize];
+  final_key ^= definitions.castle_keys()[*board.castel_permission() as usize];
 
   final_key
 }
