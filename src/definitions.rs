@@ -227,16 +227,37 @@ impl Board {
     &mut self.pawns
   }
 
-  pub fn side(&mut self) -> Colors {
-    self.side
+  pub fn king_square(&mut self) -> &mut [i32; 2] {
+    &mut self.king_square
   }
 
-  pub fn en_passant_square(&mut self) -> Squares {
-    self.en_passant_square
+  pub fn side(&mut self) -> &mut Colors {
+    &mut self.side
   }
 
-  pub fn castel_permission(&mut self) -> i32 {
-    self.castel_permission
+  pub fn en_passant_square(&mut self) -> &mut Squares {
+    &mut self.en_passant_square
+  }
+  pub fn fifty_full_moves(&mut self) -> &mut i32 {
+    &mut self.fifty_full_moves
+  }
+  pub fn actual_half_moves(&mut self) -> &mut i32 {
+    &mut self.actual_half_moves
+  }
+  pub fn total_half_moves(&mut self) -> &mut i32 {
+    &mut self.total_half_moves
+  }
+
+  pub fn actual_pieces_number(&mut self) -> &mut [i32; 13] {
+    &mut self.actual_pieces_number
+  }
+
+  pub fn castel_permission(&mut self) -> &mut i32 {
+    &mut self.castel_permission
+  }
+
+  pub fn position_key(&mut self) -> &mut u64 {
+    &mut self.position_key
   }
 
   pub fn big_pieces_number(&mut self) -> &mut [i32; 3] {
@@ -365,5 +386,3 @@ impl Definitions {
     &mut self.castle_keys
   }
 }
-
-/* FUNCTIONS */
