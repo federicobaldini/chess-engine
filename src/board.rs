@@ -3,7 +3,7 @@ use crate::definitions::*;
 pub fn reset_board(definitions: &mut Definitions, board: &mut Board) {
   *board.pieces() = [Squares::OffBoard as i32; BOARD_SQUARE_NUMBER];
   for index in 0..64 {
-    board.pieces()[definitions.board_120_squares_in_64_squares_notation()[index] as usize] =
+    board.pieces()[definitions.board_64_squares_in_120_squares_notation()[index] as usize] =
       Pieces::Empty as i32;
   }
   *board.big_pieces_number() = [0; 3];
