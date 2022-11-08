@@ -1,6 +1,8 @@
 pub const PROGRAM_NAME: &str = "Rust Chess Engine";
 pub const BOARD_SQUARE_NUMBER: usize = 120;
 pub const MAX_GAME_HALF_MOVES: usize = 2048;
+// https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+pub const START_FEN: &str =  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 // A square can be empty or contain a Wn (White kNight) chess piece for example
 #[derive(Copy, Clone)]
