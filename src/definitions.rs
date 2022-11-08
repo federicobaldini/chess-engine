@@ -31,13 +31,49 @@ impl Pieces {
   }
 }
 
+#[derive(Copy, Clone)]
 pub enum ChessboardFiles {
   A, B, C, D, E, F, G, H, None,
 }
 
+impl ChessboardFiles {
+  pub fn from_u32(value: u32) -> ChessboardFiles {
+    match value {
+      0 => ChessboardFiles::A,
+      1 => ChessboardFiles::B,
+      2 => ChessboardFiles::C,
+      3 => ChessboardFiles::D,
+      4 => ChessboardFiles::E,
+      5 => ChessboardFiles::F,
+      6 => ChessboardFiles::G,
+      7 => ChessboardFiles::H,
+      8 => ChessboardFiles::None,
+      _ => panic!("Unknown value: {}", value),
+    }
+  }
+}
+
 // R stands for "Rank"
+#[derive(Copy, Clone)]
 pub enum ChessboardRanks {
   R1, R2, R3, R4, R5, R6, R7, R8, None
+}
+
+impl ChessboardRanks {
+  pub fn from_u32(value: u32) -> ChessboardRanks {
+    match value {
+      0 => ChessboardRanks::R1,
+      1 => ChessboardRanks::R2,
+      2 => ChessboardRanks::R3,
+      3 => ChessboardRanks::R4,
+      4 => ChessboardRanks::R5,
+      5 => ChessboardRanks::R6,
+      6 => ChessboardRanks::R7,
+      7 => ChessboardRanks::R8,
+      8 => ChessboardRanks::None,
+      _ => panic!("Unknown value: {}", value),
+    }
+  }
 }
 
 #[derive(Copy, Clone)]
