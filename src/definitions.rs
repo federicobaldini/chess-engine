@@ -1,8 +1,10 @@
+use rand::Rng;
+
 pub const PROGRAM_NAME: &str = "Rust Chess Engine";
 pub const BOARD_SQUARE_NUMBER: usize = 120;
 pub const MAX_GAME_HALF_MOVES: usize = 2048;
 // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
-pub const START_FEN: &str =  "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+pub const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 
 // A square can be empty or contain a Wn (White kNight) chess piece for example
 #[derive(Copy, Clone)]
@@ -91,6 +93,79 @@ pub enum Squares {
   A6 = 71, B6, C6, D6, E6, F6, G6, H6,
   A7 = 81, B7, C7, D7, E7, F7, G7, H7,
   A8 = 91, B8, C8, D8, E8, F8, G8, H8, NoSquare, OffBoard
+
+impl Squares {
+  pub fn from_u32(value: u32) -> Squares {
+    match value {
+      21 => Squares::A1,
+      22 => Squares::B1,
+      23 => Squares::C1,
+      24 => Squares::D1,
+      25 => Squares::E1,
+      26 => Squares::F1,
+      27 => Squares::G1,
+      28 => Squares::H1,
+      31 => Squares::A2,
+      32 => Squares::B2,
+      33 => Squares::C2,
+      34 => Squares::D2,
+      35 => Squares::E2,
+      36 => Squares::F2,
+      37 => Squares::G2,
+      38 => Squares::H2,
+      41 => Squares::A3,
+      42 => Squares::B3,
+      43 => Squares::C3,
+      44 => Squares::D3,
+      45 => Squares::E3,
+      46 => Squares::F3,
+      47 => Squares::G3,
+      48 => Squares::H3,
+      51 => Squares::A4,
+      52 => Squares::B4,
+      53 => Squares::C4,
+      54 => Squares::D4,
+      55 => Squares::E4,
+      56 => Squares::F4,
+      57 => Squares::G4,
+      58 => Squares::H4,
+      61 => Squares::A5,
+      62 => Squares::B5,
+      63 => Squares::C5,
+      64 => Squares::D5,
+      65 => Squares::E5,
+      66 => Squares::F5,
+      67 => Squares::G5,
+      68 => Squares::H5,
+      71 => Squares::A6,
+      72 => Squares::B6,
+      73 => Squares::C6,
+      74 => Squares::D6,
+      75 => Squares::E6,
+      76 => Squares::F6,
+      77 => Squares::G6,
+      78 => Squares::H6,
+      81 => Squares::A7,
+      82 => Squares::B7,
+      83 => Squares::C7,
+      84 => Squares::D7,
+      85 => Squares::E7,
+      86 => Squares::F7,
+      87 => Squares::G7,
+      88 => Squares::H7,
+      91 => Squares::A8,
+      92 => Squares::B8,
+      93 => Squares::C8,
+      94 => Squares::D8,
+      95 => Squares::E8,
+      96 => Squares::F8,
+      97 => Squares::G8,
+      98 => Squares::H8,
+      99 => Squares::NoSquare,
+      100 => Squares::OffBoard,
+      _ => panic!("Unknown value: {}", value),
+    }
+  }
 }
 
 /**
@@ -104,6 +179,7 @@ pub enum Castle {
   BlackQueenSideCastel = 8,
 }
 
+#[derive(Copy, Clone)]
 pub struct Undo {
   /**
    * The move made.
@@ -146,171 +222,6 @@ impl Undo {
   }
 }
 
-pub struct Board {
-  /**
-   * It contains the whole chess board squares, and for each square contains the chess piece on it (Empty if none).
-   */
-  pieces: [i32; BOARD_SQUARE_NUMBER],
-  /**
-   * The pawns are stored in a bitboard where each square is a bit - hence 64 bits
-   * The reason for using bitboards for the pawns was twofold.
-   * 1. To show bitboards, so setting moving and clearing bits.
-   * 2. It makes evaluation of pawn structures easier as you can use bit masks.
-   * So we'll have three bitboards, once with the white pawns, another with the black pawns
-   * and a third with both color pawns (intersection).
-   * We could rapresent every chess piece on a bitboard (maybe in the future will be done), but
-   * the pawns give the most performance improvement.
-   */
-  pawns: [u64; 3],
-  /**
-   * Black or white.
-   */
-  king_square: [i32; 2],
-  side: Colors,
-  en_passant_square: Squares,
-  /**
-   * Fifty moves counter for draw, in our case will be hundred moves because we'll
-   * using half moves and not full moves.
-   */
-  fifty_full_moves: i32,
-  /**
-   * The counter of how many half moves are into the current search.
-   */
-  actual_half_moves: i32,
-  /**
-   * The counter of the total half moves played. It's needed for
-   * looking back and determining repetitions when we'll come to storing our history.
-   */
-  total_half_moves: i32,
-  castel_permission: i32,
-  /**
-   * It's a unique key which is generated for each game position.
-   */
-  position_key: u64,
-  /**
-   * The number of pieces that are on the board. Indexed by piece type (Pieces enum).
-   */
-  actual_pieces_number: [i32; 13],
-  /**
-   * They are every pieces that are not a pawn. Array size is three for black, white or both.
-   */
-  big_pieces_number: [i32; 3],
-  /**
-   * Rooks and Queens. Array size is three for black, white or both.
-   */
-  major_pieces_number: [i32; 3],
-  /**
-   * Bishops and Knights. Array size is three for black, white or both.
-   */
-  minor_pieces_number: [i32; 3],
-  history: Vec<Undo>,
-  /**
-   * It's an array of 10 elements, eachone contains the list of piece types (13).
-   * Why ten elements? Because for example at the start of the game you have 2 rooks, assumed
-   * that you promote all the pawns at rook, you can have at maximum 10 equal pieces.
-   * Use case: to set the first white knight to E3 -> pieces_list[Pieces::Wn][0] = ChessboardFiles::E + ChessboardRanks::R3
-   * This structure is more usefull (in some cases) that Definitions::pieces because here we have
-   * less empty squares and to get all the pieces on the board is sufficient to loop every piece type untill
-   * we get NoSquare as square value. So it's increment the performance of the search move engine.
-   */
-  pieces_list: [[i32; 13]; 10],
-}
-
-impl Board {
-  pub fn new() -> Board {
-    let pieces: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
-    let pawns: [u64; 3] = [0; 3];
-    let king_square: [i32; 2] = [0; 2];
-    let side: Colors = Colors::White;
-    let en_passant_square: Squares = Squares::NoSquare;
-    let fifty_full_moves: i32 = 0;
-    let actual_half_moves: i32 = 0;
-    let total_half_moves: i32 = 0;
-    let castel_permission: i32 = 0;
-    let position_key: u64 = 0;
-    let actual_pieces_number: [i32; 13] = [0; 13];
-    let big_pieces_number: [i32; 3] = [0; 3];
-    let major_pieces_number: [i32; 3] = [0; 3];
-    let minor_pieces_number: [i32; 3] = [0; 3];
-    let history: Vec<Undo> = Vec::with_capacity(MAX_GAME_HALF_MOVES); // to initialize
-    let pieces_list: [[i32; 13]; 10] = [
-      [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13],
-    ];
-
-    Board {
-      pieces,
-      pawns,
-      king_square,
-      side,
-      en_passant_square,
-      fifty_full_moves,
-      actual_half_moves,
-      total_half_moves,
-      castel_permission,
-      position_key,
-      actual_pieces_number,
-      big_pieces_number,
-      major_pieces_number,
-      minor_pieces_number,
-      history,
-      pieces_list,
-    }
-  }
-
-  pub fn pieces(&mut self) -> &mut [i32; BOARD_SQUARE_NUMBER] {
-    &mut self.pieces
-  }
-
-  pub fn pawns(&mut self) -> &mut [u64; 3] {
-    &mut self.pawns
-  }
-
-  pub fn king_square(&mut self) -> &mut [i32; 2] {
-    &mut self.king_square
-  }
-
-  pub fn side(&mut self) -> &mut Colors {
-    &mut self.side
-  }
-
-  pub fn en_passant_square(&mut self) -> &mut Squares {
-    &mut self.en_passant_square
-  }
-  pub fn fifty_full_moves(&mut self) -> &mut i32 {
-    &mut self.fifty_full_moves
-  }
-  pub fn actual_half_moves(&mut self) -> &mut i32 {
-    &mut self.actual_half_moves
-  }
-  pub fn total_half_moves(&mut self) -> &mut i32 {
-    &mut self.total_half_moves
-  }
-
-  pub fn actual_pieces_number(&mut self) -> &mut [i32; 13] {
-    &mut self.actual_pieces_number
-  }
-
-  pub fn castel_permission(&mut self) -> &mut i32 {
-    &mut self.castel_permission
-  }
-
-  pub fn position_key(&mut self) -> &mut u64 {
-    &mut self.position_key
-  }
-
-  pub fn big_pieces_number(&mut self) -> &mut [i32; 3] {
-    &mut self.big_pieces_number
-  }
-
-  pub fn major_pieces_number(&mut self) -> &mut [i32; 3] {
-    &mut self.major_pieces_number
-  }
-
-  pub fn minor_pieces_number(&mut self) -> &mut [i32; 3] {
-    &mut self.minor_pieces_number
-  }
-}
-
 /* MACROS */
 
 /**
@@ -324,8 +235,16 @@ macro_rules! file_rank_to_square_120 {
   };
 }
 
+/* FUNCTIONS */
+
+fn generate_random_chess_piece_hash() -> u64 {
+  let mut rng = rand::thread_rng();
+  rng.gen::<u64>()
+}
+
 /* GLOBALS */
 
+#[derive(Copy, Clone)]
 pub struct Definitions {
   /**
    * The board with 120 squares is the board reference for the search engine.
@@ -369,6 +288,10 @@ pub struct Definitions {
   piece_keys: [[u64; 120]; 13],
   side_key: u64,
   castle_keys: [u64; 16],
+  piece_characters: [char; 13],
+  side_characters: [char; 3],
+  rank_characters: [char; 8],
+  file_characters: [char; 8],
 }
 
 impl Definitions {
@@ -384,6 +307,12 @@ impl Definitions {
     ];
     let side_key: u64 = 0;
     let castle_keys: [u64; 16] = [0; 16];
+    let piece_characters: [char; 13] = [
+      '.', 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k',
+    ];
+    let side_characters: [char; 3] = ['w', 'b', '-'];
+    let rank_characters: [char; 8] = ['1', '2', '3', '4', '5', '6', '7', '8'];
+    let file_characters: [char; 8] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
 
     Definitions {
       board_120_squares_in_64_squares_notation,
@@ -393,34 +322,141 @@ impl Definitions {
       piece_keys,
       side_key,
       castle_keys,
+      piece_characters,
+      side_characters,
+      rank_characters,
+      file_characters,
     }
   }
 
-  pub fn board_120_squares_in_64_squares_notation(&mut self) -> &mut [i32; BOARD_SQUARE_NUMBER] {
-    &mut self.board_120_squares_in_64_squares_notation
+  pub fn init(&mut self) {
+    self.init_squares();
+    self.init_masks();
+    self.init_hash_keys()
   }
 
-  pub fn board_64_squares_in_120_squares_notation(&mut self) -> &mut [i32; 64] {
-    &mut self.board_64_squares_in_120_squares_notation
+  /**
+   * The board with 120 squares is the board reference for the search engine.
+   *
+   * We need to have the 120 squares board and the 64 squares board as follow for these reasons:
+   *
+   * When we have a 64 squares bitboard we can have for example a bit on square B2.
+   *
+   * The B2 square has position at index 9 in the array board with 64 squares in 64 squares notation.
+   * (reference: "board_64_squares_in_64_squares_notation" in definitions.rs file).
+   *
+   * Because we need to have that position on the 120 squares board,
+   *
+   * the index 9 not correspond to B2 square, it stays at index 32 in the 120 squares notation.
+   * (reference: "board_120_squares_in_120_squares_notation" in definitions.rs file).
+   *
+   * So if we have a board of 64 squares in 120 squares notation, at index 9 we got 32, then
+   * the 32 as index on the 120 squares board in 64 squares notation it's the B2 square and contains the 9 value,
+   * the square that originally we wanted arrive to on the 120 squares board.
+   *
+   * The value that we got can help us to reverse the process and get the B2 square on 64 squares board,
+   * that is the square at index 9.
+   *
+   * Final structure of definitions.board_64_squares_in_120_squares_notation (as we play with black):
+   *
+   *     A  B  C  D  E  F  G  H
+   * 1  21 22 23 24 25 26 27 28
+   * 2  31 32 33 34 35 36 37 38
+   * 3  41 42 43 44 45 46 47 48
+   * 4  51 52 53 54 55 56 57 58
+   * 5  61 62 63 64 65 66 67 68
+   * 6  71 72 73 74 75 76 77 78
+   * 7  81 82 83 84 85 86 87 88
+   * 8  91 92 93 94 95 96 97 98
+   *
+   * Final structure of definitions.board_120_squares_in_64_squares_notation (as we play with black):
+   *        A  B  C  D  E  F  G  H
+   *    65 65 65 65 65 65 65 65 65 65
+   *    65 65 65 65 65 65 65 65 65 65
+   * 1  65 00 01 02 03 04 05 06 07 65
+   * 2  65 08 09 10 11 12 13 14 15 65
+   * 3  65 16 17 18 19 20 21 22 23 65
+   * 4  65 24 25 26 27 28 29 30 31 65
+   * 5  65 32 33 34 35 36 37 38 39 65
+   * 6  65 40 41 42 43 44 45 46 47 65
+   * 7  65 48 49 50 51 52 53 54 55 65
+   * 8  65 56 57 58 59 60 61 62 63 65
+   *    65 65 65 65 65 65 65 65 65 65
+   *    65 65 65 65 65 65 65 65 65 65
+   */
+  fn init_squares(&mut self) {
+    let mut square_120: i32;
+    let mut square_64: i32 = 0;
+
+    self.board_120_squares_in_64_squares_notation[0..BOARD_SQUARE_NUMBER].fill(65);
+    self.board_64_squares_in_120_squares_notation[0..64].fill(120);
+
+    for rank in ChessboardRanks::R1 as i32..=ChessboardRanks::R8 as i32 {
+      for file in ChessboardFiles::A as i32..=ChessboardFiles::H as i32 {
+        square_120 = file_rank_to_square_120!(file, rank);
+        self.board_64_squares_in_120_squares_notation[square_64 as usize] = square_120;
+        self.board_120_squares_in_64_squares_notation[square_120 as usize] = square_64;
+        square_64 += 1;
+      }
+    }
   }
 
-  pub fn bit_mask_to_set_bit_inside_bitboard(&mut self) -> &mut [u64; 64] {
-    &mut self.bit_mask_to_set_bit_inside_bitboard
+  fn init_masks(&mut self) {
+    for index in 0..64 {
+      self.bit_mask_to_set_bit_inside_bitboard[index as usize] |= 1u64 << index;
+      // It is the bitwise complement of the "bit_mask_to_set_bit_inside_bitboard"
+      self.bit_mask_to_clear_bit_inside_bitboard[index as usize] =
+        !self.bit_mask_to_set_bit_inside_bitboard[index as usize];
+    }
   }
 
-  pub fn bit_mask_to_clear_bit_inside_bitboard(&mut self) -> &mut [u64; 64] {
-    &mut self.bit_mask_to_clear_bit_inside_bitboard
+  fn init_hash_keys(&mut self) {
+    self.piece_keys = [[generate_random_chess_piece_hash(); 120]; 13];
+    self.side_key = generate_random_chess_piece_hash();
+    self.castle_keys = [generate_random_chess_piece_hash(); 16];
   }
 
-  pub fn piece_keys(&mut self) -> &mut [[u64; 120]; 13] {
-    &mut self.piece_keys
+  pub fn board_120_squares_in_64_squares_notation(self) -> [i32; BOARD_SQUARE_NUMBER] {
+    self.board_120_squares_in_64_squares_notation
   }
 
-  pub fn side_key(&mut self) -> &mut u64 {
-    &mut self.side_key
+  pub fn board_64_squares_in_120_squares_notation(self) -> [i32; 64] {
+    self.board_64_squares_in_120_squares_notation
   }
 
-  pub fn castle_keys(&mut self) -> &mut [u64; 16] {
-    &mut self.castle_keys
+  pub fn bit_mask_to_set_bit_inside_bitboard(self) -> [u64; 64] {
+    self.bit_mask_to_set_bit_inside_bitboard
+  }
+
+  pub fn bit_mask_to_clear_bit_inside_bitboard(self) -> [u64; 64] {
+    self.bit_mask_to_clear_bit_inside_bitboard
+  }
+
+  pub fn piece_keys(self) -> [[u64; 120]; 13] {
+    self.piece_keys
+  }
+
+  pub fn side_key(self) -> u64 {
+    self.side_key
+  }
+
+  pub fn castle_keys(self) -> [u64; 16] {
+    self.castle_keys
+  }
+
+  pub fn piece_characters(self) -> [char; 13] {
+    self.piece_characters
+  }
+
+  pub fn side_characters(self) -> [char; 3] {
+    self.side_characters
+  }
+
+  pub fn rank_characters(self) -> [char; 8] {
+    self.rank_characters
+  }
+
+  pub fn file_characters(self) -> [char; 8] {
+    self.file_characters
   }
 }
