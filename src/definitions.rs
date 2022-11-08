@@ -93,6 +93,7 @@ pub enum Squares {
   A6 = 71, B6, C6, D6, E6, F6, G6, H6,
   A7 = 81, B7, C7, D7, E7, F7, G7, H7,
   A8 = 91, B8, C8, D8, E8, F8, G8, H8, NoSquare, OffBoard
+}
 
 impl Squares {
   pub fn from_u32(value: u32) -> Squares {
