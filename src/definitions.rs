@@ -33,6 +33,12 @@ impl Pieces {
   }
 }
 
+impl PartialEq for Pieces {
+  fn eq(&self, other: &Self) -> bool {
+      *self as u32 == *other as u32
+  }
+}
+
 #[derive(Copy, Clone)]
 pub enum ChessboardFiles {
   A, B, C, D, E, F, G, H, None,
@@ -52,6 +58,12 @@ impl ChessboardFiles {
       8 => ChessboardFiles::None,
       _ => panic!("Unknown value: {}", value),
     }
+  }
+}
+
+impl PartialEq for ChessboardFiles {
+  fn eq(&self, other: &Self) -> bool {
+      *self as u32 == *other as u32
   }
 }
 
@@ -78,9 +90,21 @@ impl ChessboardRanks {
   }
 }
 
+impl PartialEq for ChessboardRanks {
+  fn eq(&self, other: &Self) -> bool {
+      *self as u32 == *other as u32
+  }
+}
+
 #[derive(Copy, Clone)]
 pub enum Colors {
   White, Black, Both
+}
+
+impl PartialEq for Colors {
+  fn eq(&self, other: &Self) -> bool {
+      *self as u32 == *other as u32
+  }
 }
 
 #[derive(Copy, Clone)]
@@ -166,6 +190,12 @@ impl Squares {
       100 => Squares::OffBoard,
       _ => panic!("Unknown value: {}", value),
     }
+  }
+}
+
+impl PartialEq for Squares {
+  fn eq(&self, other: &Self) -> bool {
+      *self as u32 == *other as u32
   }
 }
 
