@@ -22,7 +22,7 @@ pub struct Board {
   /**
    * Black or white.
    */
-  king_square: [i32; 2],
+  king_square: [Squares; 2],
   side: Colors,
   en_passant_square: Squares,
   /**
@@ -49,17 +49,21 @@ pub struct Board {
    */
   actual_pieces_number: [i32; 13],
   /**
-   * They are every pieces that are not a pawn. Array size is three for black, white or both.
+   * They are every pieces that are not a pawn. Array size is two for black and white.
    */
-  big_pieces_number: [i32; 3],
+  big_pieces_number: [i32; 2],
   /**
-   * Rooks and Queens. Array size is three for black, white or both.
+   * Rooks and Queens. Array size is two for black and white.
    */
-  major_pieces_number: [i32; 3],
+  major_pieces_number: [i32; 2],
   /**
-   * Bishops and Knights. Array size is three for black, white or both.
+   * Bishops and Knights. Array size is two for black and white.
    */
-  minor_pieces_number: [i32; 3],
+  minor_pieces_number: [i32; 2],
+  /**
+   * Is the value of the material for black and white.
+   */
+  material: [i32; 2],
   history: [Undo; MAX_GAME_HALF_MOVES],
   /**
    * It's an array of 10 elements, eachone contains the list of piece types (13).
@@ -77,7 +81,7 @@ impl Board {
   pub fn new() -> Board {
     let pieces: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
     let pawns: [u64; 3] = [0; 3];
-    let king_square: [i32; 2] = [0; 2];
+    let king_square: [Squares; 2] = [Squares::NoSquare; 2];
     let side: Colors = Colors::White;
     let en_passant_square: Squares = Squares::NoSquare;
     let fifty_full_moves: i32 = 0;
@@ -86,9 +90,10 @@ impl Board {
     let castel_permission: u8 = 0;
     let position_key: u64 = 0;
     let actual_pieces_number: [i32; 13] = [0; 13];
-    let big_pieces_number: [i32; 3] = [0; 3];
-    let major_pieces_number: [i32; 3] = [0; 3];
-    let minor_pieces_number: [i32; 3] = [0; 3];
+    let big_pieces_number: [i32; 2] = [0; 2];
+    let major_pieces_number: [i32; 2] = [0; 2];
+    let minor_pieces_number: [i32; 2] = [0; 2];
+    let material: [i32; 2] = [0; 2];
     let history: [Undo; MAX_GAME_HALF_MOVES] = [Undo::new(); MAX_GAME_HALF_MOVES];
     let pieces_list: [[i32; 13]; 10] = [
       [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13],
@@ -109,6 +114,7 @@ impl Board {
       big_pieces_number,
       major_pieces_number,
       minor_pieces_number,
+      material,
       history,
       pieces_list,
     }
@@ -136,12 +142,12 @@ impl Board {
       self.pieces[definitions.board_64_squares_in_120_squares_notation()[index] as usize] =
         Pieces::Empty as i32;
     }
-    self.big_pieces_number = [0; 3];
-    self.major_pieces_number = [0; 3];
-    self.minor_pieces_number = [0; 3];
+    self.big_pieces_number = [0; 2];
+    self.major_pieces_number = [0; 2];
+    self.minor_pieces_number = [0; 2];
     self.pawns = [0u64; 3];
     self.actual_pieces_number = [0; 13];
-    self.king_square = [Squares::NoSquare as i32, 2];
+    self.king_square = [Squares::NoSquare; 2];
     self.side = Colors::Both;
     self.en_passant_square = Squares::NoSquare;
     self.fifty_full_moves = 0;
@@ -201,22 +207,8 @@ impl Board {
         for _ in 0..count {
           square_64 = rank as i32 * 8 + file as i32;
           square_120 = definitions.board_64_squares_in_120_squares_notation()[square_64 as usize];
-          if piece as i32 != Pieces::Empty as i32 {
-            /*
-            Uncomment to see the piece to be added
-              print!("{}, ", piece as i32);
-            */
+          if piece != Pieces::Empty {
             self.pieces[square_120 as usize] = piece as i32;
-            /*
-            Uncomment to see the piece added
-            for i in 0..120 {
-              if i % 10 == 0 {
-                println!();
-              }
-              print!("{} ", self.pieces[i]);
-            }
-            println!();
-            */
           }
           file = ChessboardFiles::from_u32(file as u32 + 1);
         }
@@ -261,8 +253,6 @@ impl Board {
     if fen_char != '-' {
       file = ChessboardFiles::from_u32(fen.as_bytes()[char_index] as u32 - 'a' as u32);
       rank = ChessboardRanks::from_u32(fen.as_bytes()[char_index + 1] as u32 - '1' as u32);
-      self.en_passant_square =
-        Squares::from_u32(file_rank_to_square_120!(file as i32, rank as i32) as u32);
     }
     self.position_key = generate_position_key(definitions, *self);
   }
@@ -318,5 +308,43 @@ impl Board {
       },
     );
     println!("{:X?}", self.position_key);
+  }
+
+  pub fn update_lists_material(&mut self, definition: Definitions) {
+    let mut piece: Pieces = Pieces::Empty;
+    let mut square: Squares;
+    let mut color: Colors;
+
+    for square_120 in 0..BOARD_SQUARE_NUMBER {
+      square = Squares::from_u32(self.pieces[square_120 as usize] as u32);
+      if square != Squares::OffBoard {
+        piece = Pieces::from_u32(self.pieces[square_120 as usize] as u32);
+        if piece != Pieces::Empty {
+          color = definition.piece_color()[piece as usize];
+
+          if definition.piece_big()[piece as usize] == true {
+            self.big_pieces_number[color as usize] += 1;
+          }
+          if definition.piece_major()[piece as usize] == true {
+            self.major_pieces_number[color as usize] += 1;
+          }
+          if definition.piece_minor()[piece as usize] == true {
+            self.minor_pieces_number[color as usize] += 1;
+          }
+
+          self.material[color as usize] += definition.piece_value()[piece as usize];
+          self.pieces_list[piece as usize][self.actual_pieces_number[piece as usize] as usize] =
+            square as i32;
+          self.actual_pieces_number[piece as usize] += 1;
+          
+          if piece == Pieces::Wk {
+            self.king_square[Colors::White as usize] = square;
+          }
+          if piece == Pieces::Bk {
+            self.king_square[Colors::Black as usize] = square;
+          }
+        }
+      }
+    }
   }
 }
