@@ -8,17 +8,17 @@ pub fn generate_position_key(definitions: Definitions, board: Board) -> u64 {
   for square_120 in 0..BOARD_SQUARE_NUMBER {
     if board.pieces()[square_120 as usize] as u32 != Squares::OffBoard as u32 {
       piece = Pieces::from_u32(board.pieces()[square_120 as usize] as u32);
-      if piece as i32 != Squares::NoSquare as i32 && piece as i32 != Pieces::Empty as i32 {
+      if piece as u32 != Squares::NoSquare as u32 && piece != Pieces::Empty {
         final_key ^= definitions.piece_keys()[piece as usize][square_120 as usize];
       }
     }
   }
 
-  if board.side() as i32 == Colors::White as i32 {
+  if board.side() == Colors::White {
     final_key ^= definitions.side_key();
   }
 
-  if board.en_passant_square() as i32 != Squares::NoSquare as i32 {
+  if board.en_passant_square() != Squares::NoSquare {
     final_key ^=
       definitions.piece_keys()[Pieces::Empty as usize][board.en_passant_square() as usize];
   }
