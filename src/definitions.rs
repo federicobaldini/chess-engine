@@ -323,6 +323,11 @@ pub struct Definitions {
   side_characters: [char; 3],
   rank_characters: [char; 8],
   file_characters: [char; 8],
+  piece_big: [bool; 13],
+  piece_major: [bool; 13],
+  piece_minor: [bool; 13],
+  piece_value: [i32; 13],
+  piece_color: [Colors; 13],
 }
 
 impl Definitions {
@@ -344,6 +349,34 @@ impl Definitions {
     let side_characters: [char; 3] = ['w', 'b', '-'];
     let rank_characters: [char; 8] = ['1', '2', '3', '4', '5', '6', '7', '8'];
     let file_characters: [char; 8] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+    // (index)pieces = (0) None / White: (1)pawn, (2)knight, (3)bishop (4)rook (5)queen (6)king / Black: (7)pawn, (8)knight, (9)bishop (10)rook (11)queen (12)king
+    let piece_big: [bool; 13] = [
+      false, false, true, true, true, true, true, false, true, true, true, true, true,
+    ];
+    let piece_major: [bool; 13] = [
+      false, false, false, false, true, true, true, false, false, false, true, true, true,
+    ];
+    let piece_minor: [bool; 13] = [
+      false, false, true, true, false, false, false, false, true, true, false, false, false,
+    ];
+    let piece_value: [i32; 13] = [
+      0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000,
+    ];
+    let piece_color: [Colors; 13] = [
+      Colors::Both,
+      Colors::White,
+      Colors::White,
+      Colors::White,
+      Colors::White,
+      Colors::White,
+      Colors::White,
+      Colors::Black,
+      Colors::Black,
+      Colors::Black,
+      Colors::Black,
+      Colors::Black,
+      Colors::Black,
+    ];
 
     Definitions {
       board_120_squares_in_64_squares_notation,
@@ -357,6 +390,11 @@ impl Definitions {
       side_characters,
       rank_characters,
       file_characters,
+      piece_big,
+      piece_major,
+      piece_minor,
+      piece_value,
+      piece_color,
     }
   }
 
@@ -489,5 +527,25 @@ impl Definitions {
 
   pub fn file_characters(self) -> [char; 8] {
     self.file_characters
+  }
+
+  pub fn piece_big(self) -> [bool; 13] {
+    self.piece_big
+  }
+
+  pub fn piece_major(self) -> [bool; 13] {
+    self.piece_major
+  }
+
+  pub fn piece_minor(self) -> [bool; 13] {
+    self.piece_minor
+  }
+
+  pub fn piece_value(self) -> [i32; 13] {
+    self.piece_value
+  }
+
+  pub fn piece_color(self) -> [Colors; 13] {
+    self.piece_color
   }
 }
