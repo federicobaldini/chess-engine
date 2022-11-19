@@ -35,7 +35,7 @@ impl Pieces {
 
 impl PartialEq for Pieces {
   fn eq(&self, other: &Self) -> bool {
-      *self as u32 == *other as u32
+    *self as u32 == *other as u32
   }
 }
 
@@ -63,7 +63,7 @@ impl ChessboardFiles {
 
 impl PartialEq for ChessboardFiles {
   fn eq(&self, other: &Self) -> bool {
-      *self as u32 == *other as u32
+    *self as u32 == *other as u32
   }
 }
 
@@ -92,7 +92,7 @@ impl ChessboardRanks {
 
 impl PartialEq for ChessboardRanks {
   fn eq(&self, other: &Self) -> bool {
-      *self as u32 == *other as u32
+    *self as u32 == *other as u32
   }
 }
 
@@ -103,7 +103,7 @@ pub enum Colors {
 
 impl PartialEq for Colors {
   fn eq(&self, other: &Self) -> bool {
-      *self as u32 == *other as u32
+    *self as u32 == *other as u32
   }
 }
 
@@ -195,7 +195,7 @@ impl Squares {
 
 impl PartialEq for Squares {
   fn eq(&self, other: &Self) -> bool {
-      *self as u32 == *other as u32
+    *self as u32 == *other as u32
   }
 }
 
