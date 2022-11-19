@@ -328,6 +328,16 @@ pub struct Definitions {
   piece_minor: [bool; 13],
   piece_value: [i32; 13],
   piece_color: [Colors; 13],
+  /**
+   * At given square, we want to know immediatly on which file the square is, so
+   * we use this structure.
+   */
+  files_board: [i32; BOARD_SQUARE_NUMBER],
+  /**
+   * At given square, we want to know immediatly on which rank the square is, so
+   * we use this structure.
+   */
+  ranks_board: [i32; BOARD_SQUARE_NUMBER],
 }
 
 impl Definitions {
@@ -377,6 +387,8 @@ impl Definitions {
       Colors::Black,
       Colors::Black,
     ];
+    let files_board: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
+    let ranks_board: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
 
     Definitions {
       board_120_squares_in_64_squares_notation,
@@ -395,13 +407,80 @@ impl Definitions {
       piece_minor,
       piece_value,
       piece_color,
+      files_board,
+      ranks_board,
     }
+  }
+
+  pub fn board_120_squares_in_64_squares_notation(self) -> [i32; BOARD_SQUARE_NUMBER] {
+    self.board_120_squares_in_64_squares_notation
+  }
+
+  pub fn board_64_squares_in_120_squares_notation(self) -> [i32; 64] {
+    self.board_64_squares_in_120_squares_notation
+  }
+
+  pub fn bit_mask_to_set_bit_inside_bitboard(self) -> [u64; 64] {
+    self.bit_mask_to_set_bit_inside_bitboard
+  }
+
+  pub fn bit_mask_to_clear_bit_inside_bitboard(self) -> [u64; 64] {
+    self.bit_mask_to_clear_bit_inside_bitboard
+  }
+
+  pub fn piece_keys(self) -> [[u64; 120]; 13] {
+    self.piece_keys
+  }
+
+  pub fn side_key(self) -> u64 {
+    self.side_key
+  }
+
+  pub fn castle_keys(self) -> [u64; 16] {
+    self.castle_keys
+  }
+
+  pub fn piece_characters(self) -> [char; 13] {
+    self.piece_characters
+  }
+
+  pub fn side_characters(self) -> [char; 3] {
+    self.side_characters
+  }
+
+  pub fn rank_characters(self) -> [char; 8] {
+    self.rank_characters
+  }
+
+  pub fn file_characters(self) -> [char; 8] {
+    self.file_characters
+  }
+
+  pub fn piece_big(self) -> [bool; 13] {
+    self.piece_big
+  }
+
+  pub fn piece_major(self) -> [bool; 13] {
+    self.piece_major
+  }
+
+  pub fn piece_minor(self) -> [bool; 13] {
+    self.piece_minor
+  }
+
+  pub fn piece_value(self) -> [i32; 13] {
+    self.piece_value
+  }
+
+  pub fn piece_color(self) -> [Colors; 13] {
+    self.piece_color
   }
 
   pub fn init(&mut self) {
     self.init_squares();
     self.init_masks();
-    self.init_hash_keys()
+    self.init_hash_keys();
+    self.init_files_ranks_board();
   }
 
   /**
@@ -485,67 +564,67 @@ impl Definitions {
     self.castle_keys = [generate_random_chess_piece_hash(); 16];
   }
 
-  pub fn board_120_squares_in_64_squares_notation(self) -> [i32; BOARD_SQUARE_NUMBER] {
-    self.board_120_squares_in_64_squares_notation
-  }
+  /**
+   * Final structure of files_board:
+   *
+   * 100 100 100 100 100 100 100 100 100 100
+   * 100 100 100 100 100 100 100 100 100 100
+   * 100   0   1   2   3   4   5   6   7 100
+   * 100   0   1   2   3   4   5   6   7 100
+   * 100   0   1   2   3   4   5   6   7 100
+   * 100   0   1   2   3   4   5   6   7 100
+   * 100   0   1   2   3   4   5   6   7 100
+   * 100   0   1   2   3   4   5   6   7 100
+   * 100   0   1   2   3   4   5   6   7 100
+   * 100   0   1   2   3   4   5   6   7 100
+   * 100 100 100 100 100 100 100 100 100 100
+   * 100 100 100 100 100 100 100 100 100 100
+   *
+   * Final structure of ranks_board:
+   *
+   * 100 100 100 100 100 100 100 100 100 100
+   * 100 100 100 100 100 100 100 100 100 100
+   * 100   0   0   0   0   0   0   0   0 100
+   * 100   1   1   1   1   1   1   1   1 100
+   * 100   2   2   2   2   2   2   2   2 100
+   * 100   3   3   3   3   3   3   3   3 100
+   * 100   4   4   4   4   4   4   4   4 100
+   * 100   5   5   5   5   5   5   5   5 100
+   * 100   6   6   6   6   6   6   6   6 100
+   * 100   7   7   7   7   7   7   7   7 100
+   * 100 100 100 100 100 100 100 100 100 100
+   * 100 100 100 100 100 100 100 100 100 100
+   */
+  fn init_files_ranks_board(&mut self) {
+    let mut square_120: i32;
 
-  pub fn board_64_squares_in_120_squares_notation(self) -> [i32; 64] {
-    self.board_64_squares_in_120_squares_notation
-  }
+    self.files_board = [Squares::OffBoard as i32; BOARD_SQUARE_NUMBER];
+    self.ranks_board = [Squares::OffBoard as i32; BOARD_SQUARE_NUMBER];
 
-  pub fn bit_mask_to_set_bit_inside_bitboard(self) -> [u64; 64] {
-    self.bit_mask_to_set_bit_inside_bitboard
-  }
+    for rank in ChessboardRanks::R1 as i32..=ChessboardRanks::R8 as i32 {
+      for file in ChessboardFiles::A as i32..=ChessboardFiles::H as i32 {
+        square_120 = file_rank_to_square_120!(file, rank);
+        self.files_board[square_120 as usize] = file;
+        self.ranks_board[square_120 as usize] = rank;
+      }
+    }
 
-  pub fn bit_mask_to_clear_bit_inside_bitboard(self) -> [u64; 64] {
-    self.bit_mask_to_clear_bit_inside_bitboard
-  }
+    // test code
+    println!("Files board:");
+    for index in 0..BOARD_SQUARE_NUMBER {
+      if index % 10 == 0 && index != 0 {
+        println!();
+      }
+      print!("{: >4}", self.files_board[index]);
+    }
 
-  pub fn piece_keys(self) -> [[u64; 120]; 13] {
-    self.piece_keys
-  }
-
-  pub fn side_key(self) -> u64 {
-    self.side_key
-  }
-
-  pub fn castle_keys(self) -> [u64; 16] {
-    self.castle_keys
-  }
-
-  pub fn piece_characters(self) -> [char; 13] {
-    self.piece_characters
-  }
-
-  pub fn side_characters(self) -> [char; 3] {
-    self.side_characters
-  }
-
-  pub fn rank_characters(self) -> [char; 8] {
-    self.rank_characters
-  }
-
-  pub fn file_characters(self) -> [char; 8] {
-    self.file_characters
-  }
-
-  pub fn piece_big(self) -> [bool; 13] {
-    self.piece_big
-  }
-
-  pub fn piece_major(self) -> [bool; 13] {
-    self.piece_major
-  }
-
-  pub fn piece_minor(self) -> [bool; 13] {
-    self.piece_minor
-  }
-
-  pub fn piece_value(self) -> [i32; 13] {
-    self.piece_value
-  }
-
-  pub fn piece_color(self) -> [Colors; 13] {
-    self.piece_color
+    // test code
+    println!("\n\nRanks board:");
+    for index in 0..BOARD_SQUARE_NUMBER {
+      if index % 10 == 0 && index != 0 {
+        println!();
+      }
+      print!("{: >4}", self.ranks_board[index]);
+    }
   }
 }
