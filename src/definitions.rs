@@ -412,67 +412,67 @@ impl Definitions {
     }
   }
 
-  pub fn board_120_squares_in_64_squares_notation(self) -> [i32; BOARD_SQUARE_NUMBER] {
+  pub fn board_120_squares_in_64_squares_notation(&self) -> [i32; BOARD_SQUARE_NUMBER] {
     self.board_120_squares_in_64_squares_notation
   }
 
-  pub fn board_64_squares_in_120_squares_notation(self) -> [i32; 64] {
+  pub fn board_64_squares_in_120_squares_notation(&self) -> [i32; 64] {
     self.board_64_squares_in_120_squares_notation
   }
 
-  pub fn bit_mask_to_set_bit_inside_bitboard(self) -> [u64; 64] {
+  pub fn bit_mask_to_set_bit_inside_bitboard(&self) -> [u64; 64] {
     self.bit_mask_to_set_bit_inside_bitboard
   }
 
-  pub fn bit_mask_to_clear_bit_inside_bitboard(self) -> [u64; 64] {
+  pub fn bit_mask_to_clear_bit_inside_bitboard(&self) -> [u64; 64] {
     self.bit_mask_to_clear_bit_inside_bitboard
   }
 
-  pub fn piece_keys(self) -> [[u64; 120]; 13] {
+  pub fn piece_keys(&self) -> [[u64; 120]; 13] {
     self.piece_keys
   }
 
-  pub fn side_key(self) -> u64 {
+  pub fn side_key(&self) -> u64 {
     self.side_key
   }
 
-  pub fn castle_keys(self) -> [u64; 16] {
+  pub fn castle_keys(&self) -> [u64; 16] {
     self.castle_keys
   }
 
-  pub fn piece_characters(self) -> [char; 13] {
+  pub fn piece_characters(&self) -> [char; 13] {
     self.piece_characters
   }
 
-  pub fn side_characters(self) -> [char; 3] {
+  pub fn side_characters(&self) -> [char; 3] {
     self.side_characters
   }
 
-  pub fn rank_characters(self) -> [char; 8] {
+  pub fn rank_characters(&self) -> [char; 8] {
     self.rank_characters
   }
 
-  pub fn file_characters(self) -> [char; 8] {
+  pub fn file_characters(&self) -> [char; 8] {
     self.file_characters
   }
 
-  pub fn piece_big(self) -> [bool; 13] {
+  pub fn piece_big(&self) -> [bool; 13] {
     self.piece_big
   }
 
-  pub fn piece_major(self) -> [bool; 13] {
+  pub fn piece_major(&self) -> [bool; 13] {
     self.piece_major
   }
 
-  pub fn piece_minor(self) -> [bool; 13] {
+  pub fn piece_minor(&self) -> [bool; 13] {
     self.piece_minor
   }
 
-  pub fn piece_value(self) -> [i32; 13] {
+  pub fn piece_value(&self) -> [i32; 13] {
     self.piece_value
   }
 
-  pub fn piece_color(self) -> [Colors; 13] {
+  pub fn piece_color(&self) -> [Colors; 13] {
     self.piece_color
   }
 

@@ -122,6 +122,12 @@ impl Board {
 
   pub fn pieces(&self) -> &[i32; BOARD_SQUARE_NUMBER] {
     &self.pieces
+  pub fn pieces(&self) -> [i32; BOARD_SQUARE_NUMBER] {
+    self.pieces
+  }
+
+  pub fn pawns(&self) -> [u64; 3] {
+    self.pawns
   }
 
   pub fn side(&self) -> Colors {
@@ -136,7 +142,7 @@ impl Board {
     self.castel_permission
   }
 
-  pub fn reset_board(&mut self, definitions: Definitions) {
+  pub fn reset_board(&mut self, definitions: &Definitions) {
     self.pieces = [Squares::OffBoard as i32; BOARD_SQUARE_NUMBER];
     for index in 0..64 {
       self.pieces[definitions.board_64_squares_in_120_squares_notation()[index] as usize] =
@@ -158,7 +164,7 @@ impl Board {
   }
 
   // fen = Forsyth–Edwards Notation
-  pub fn parse_fen(&mut self, definitions: Definitions, fen: &str) {
+  pub fn parse_fen(&mut self, definitions: &Definitions, fen: &str) {
     let mut rank: ChessboardRanks = ChessboardRanks::R8;
     let mut file: ChessboardFiles = ChessboardFiles::A;
     let mut piece: Pieces = Pieces::Empty;
@@ -254,11 +260,11 @@ impl Board {
       file = ChessboardFiles::from_u32(fen.as_bytes()[char_index] as u32 - 'a' as u32);
       rank = ChessboardRanks::from_u32(fen.as_bytes()[char_index + 1] as u32 - '1' as u32);
     }
-    self.position_key = generate_position_key(definitions, *self);
+    self.position_key = generate_position_key(definitions, self);
   }
 
-  pub fn print_board(self, definitions: Definitions) {
     let mut square_120: i32;
+  pub fn print_board(&self, definitions: &Definitions) {
     let mut piece: i32;
 
     println!("\nGame Board:\n");
@@ -310,9 +316,9 @@ impl Board {
     println!("{:X?}", self.position_key);
   }
 
-  pub fn update_lists_material(&mut self, definition: Definitions) {
     let mut piece: Pieces = Pieces::Empty;
     let mut square: Squares;
+  pub fn update_lists_material(&mut self, definitions: &Definitions) {
     let mut color: Colors;
 
     for square_120 in 0..BOARD_SQUARE_NUMBER {

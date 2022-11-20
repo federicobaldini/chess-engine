@@ -1,7 +1,7 @@
 use crate::board::*;
 use crate::definitions::*;
 
-pub fn generate_position_key(definitions: Definitions, board: Board) -> u64 {
+pub fn generate_position_key(definitions: &Definitions, board: &Board) -> u64 {
   let mut final_key: u64 = 0;
   let mut piece: Pieces;
 

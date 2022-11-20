@@ -27,7 +27,7 @@ const BIT_TABLE: [i32; 64] = [
  * 1  - - - - - - - -
  *
  */
-pub fn print_bitboard(definitions: Definitions, bitboard: u64) {
+pub fn print_bitboard(definitions: &Definitions, bitboard: u64) {
   let shift_me: u64 = 1u64;
 
   let mut square_120: i32;
@@ -95,10 +95,10 @@ pub fn count_bits(mut bitboard: u64) -> u64 {
   counter
 }
 
-pub fn set_bit_to_bitboard(definitions: Definitions, bitboard: &mut u64, square_64: i32) {
+pub fn set_bit_to_bitboard(definitions: &Definitions, bitboard: &mut u64, square_64: i32) {
   *bitboard |= definitions.bit_mask_to_set_bit_inside_bitboard()[square_64 as usize];
 }
 
-pub fn clear_bit_to_bitboard(definitions: Definitions, bitboard: &mut u64, square_64: i32) {
+pub fn clear_bit_to_bitboard(definitions: &Definitions, bitboard: &mut u64, square_64: i32) {
   *bitboard &= definitions.bit_mask_to_clear_bit_inside_bitboard()[square_64 as usize];
 }
