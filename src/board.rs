@@ -262,6 +262,7 @@ impl Board {
         Squares::from_u32(file_rank_to_square_120!(file as i32, rank as i32) as u32);
     }
     self.position_key = generate_position_key(definitions, self);
+    self.update_lists_material(definitions);
   }
 
     let mut square_120: i32;
