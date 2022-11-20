@@ -265,12 +265,11 @@ impl Board {
     self.update_lists_material(definitions);
   }
 
-    let mut square_120: i32;
   pub fn print_board(&self, definitions: &Definitions) {
     let mut piece: i32;
+    let mut square_120: i32;
 
     println!("\nGame Board:\n");
-
     for rank in (ChessboardRanks::R1 as i32..=ChessboardRanks::R8 as i32).rev() {
       print!("{}   ", rank + 1);
       for file in ChessboardFiles::A as i32..=ChessboardFiles::H as i32 {
@@ -318,9 +317,8 @@ impl Board {
     println!("{:X?}", self.position_key);
   }
 
-    let mut piece: Pieces = Pieces::Empty;
-    let mut square: Squares;
   pub fn update_lists_material(&mut self, definitions: &Definitions) {
+    let mut piece: Pieces;
     let mut color: Colors;
 
     for square_120 in 0..BOARD_SQUARE_NUMBER {
