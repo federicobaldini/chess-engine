@@ -608,23 +608,5 @@ impl Definitions {
         self.ranks_board[square_120 as usize] = rank;
       }
     }
-
-    // test code
-    println!("Files board:");
-    for index in 0..BOARD_SQUARE_NUMBER {
-      if index % 10 == 0 && index != 0 {
-        println!();
-      }
-      print!("{: >4}", self.files_board[index]);
-    }
-
-    // test code
-    println!("\n\nRanks board:");
-    for index in 0..BOARD_SQUARE_NUMBER {
-      if index % 10 == 0 && index != 0 {
-        println!();
-      }
-      print!("{: >4}", self.ranks_board[index]);
-    }
   }
 }
