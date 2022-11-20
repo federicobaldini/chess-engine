@@ -322,32 +322,32 @@ impl Board {
     let mut color: Colors;
 
     for square_120 in 0..BOARD_SQUARE_NUMBER {
-      square = Squares::from_u32(self.pieces[square_120 as usize] as u32);
-      if square != Squares::OffBoard {
+      if self.pieces[square_120 as usize] != Squares::OffBoard as i32 {
         piece = Pieces::from_u32(self.pieces[square_120 as usize] as u32);
         if piece != Pieces::Empty {
-          color = definition.piece_color()[piece as usize];
+          color = definitions.piece_color()[piece as usize];
 
-          if definition.piece_big()[piece as usize] == true {
+          if definitions.piece_big()[piece as usize] == true {
             self.big_pieces_number[color as usize] += 1;
           }
-          if definition.piece_major()[piece as usize] == true {
+          if definitions.piece_major()[piece as usize] == true {
             self.major_pieces_number[color as usize] += 1;
           }
-          if definition.piece_minor()[piece as usize] == true {
+          if definitions.piece_minor()[piece as usize] == true {
             self.minor_pieces_number[color as usize] += 1;
           }
 
-          self.material[color as usize] += definition.piece_value()[piece as usize];
+          self.material[color as usize] += definitions.piece_value()[piece as usize];
           self.pieces_list[piece as usize][self.actual_pieces_number[piece as usize] as usize] =
-            square as i32;
+            piece as i32;
           self.actual_pieces_number[piece as usize] += 1;
-          
+
           if piece == Pieces::Wk {
-            self.king_square[Colors::White as usize] = square;
+            self.king_square[Colors::White as usize] = Squares::from_u32(square_120 as u32);
           }
           if piece == Pieces::Bk {
-            self.king_square[Colors::Black as usize] = square;
+            self.king_square[Colors::Black as usize] = Squares::from_u32(square_120 as u32);
+          }
           }
         }
       }
