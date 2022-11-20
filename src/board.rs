@@ -1,3 +1,4 @@
+use crate::bitboards;
 use crate::definitions::*;
 use crate::file_rank_to_square_120;
 use crate::hashkeys::*;
@@ -348,6 +349,29 @@ impl Board {
           if piece == Pieces::Bk {
             self.king_square[Colors::Black as usize] = Squares::from_u32(square_120 as u32);
           }
+
+          if piece == Pieces::Wp {
+            bitboards::set_bit_to_bitboard(
+              definitions,
+              &mut self.pawns[Colors::White as usize],
+              definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
+            );
+            bitboards::set_bit_to_bitboard(
+              definitions,
+              &mut self.pawns[Colors::Both as usize],
+              definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
+            );
+          } else if piece == Pieces::Bp {
+            bitboards::set_bit_to_bitboard(
+              definitions,
+              &mut self.pawns[Colors::Black as usize],
+              definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
+            );
+            bitboards::set_bit_to_bitboard(
+              definitions,
+              &mut self.pawns[Colors::Both as usize],
+              definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
+            );
           }
         }
       }
