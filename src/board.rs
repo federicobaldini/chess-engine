@@ -66,7 +66,7 @@ pub struct Board {
   material: [i32; 2],
   history: [Undo; MAX_GAME_HALF_MOVES],
   /**
-   * It's an array of 10 elements, eachone contains the list of piece types (13).
+   * It's an array of 13 piece types, eachone contains the list of pieces (10).
    * Why ten elements? Because for example at the start of the game you have 2 rooks, assumed
    * that you promote all the pawns at rook, you can have at maximum 10 equal pieces.
    * Use case: to set the first white knight to E3 -> pieces_list[Pieces::Wn][0] = ChessboardFiles::E + ChessboardRanks::R3
@@ -74,7 +74,7 @@ pub struct Board {
    * less empty squares and to get all the pieces on the board is sufficient to loop every piece type untill
    * we get NoSquare as square value. So it's increment the performance of the search move engine.
    */
-  pieces_list: [[i32; 13]; 10],
+  pieces_list: [[i32; 10]; 13],
 }
 
 impl Board {
@@ -95,8 +95,9 @@ impl Board {
     let minor_pieces_number: [i32; 2] = [0; 2];
     let material: [i32; 2] = [0; 2];
     let history: [Undo; MAX_GAME_HALF_MOVES] = [Undo::new(); MAX_GAME_HALF_MOVES];
-    let pieces_list: [[i32; 13]; 10] = [
-      [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13], [0; 13],
+    let pieces_list: [[i32; 10]; 13] = [
+      [0; 10], [0; 10], [0; 10], [0; 10], [0; 10], [0; 10], [0; 10], [0; 10], [0; 10], [0; 10],
+      [0; 10], [0; 10], [0; 10],
     ];
 
     Board {
@@ -120,8 +121,6 @@ impl Board {
     }
   }
 
-  pub fn pieces(&self) -> &[i32; BOARD_SQUARE_NUMBER] {
-    &self.pieces
   pub fn pieces(&self) -> [i32; BOARD_SQUARE_NUMBER] {
     self.pieces
   }
