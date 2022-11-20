@@ -258,6 +258,8 @@ impl Board {
     if fen_char != '-' {
       file = ChessboardFiles::from_u32(fen.as_bytes()[char_index] as u32 - 'a' as u32);
       rank = ChessboardRanks::from_u32(fen.as_bytes()[char_index + 1] as u32 - '1' as u32);
+      self.en_passant_square =
+        Squares::from_u32(file_rank_to_square_120!(file as i32, rank as i32) as u32);
     }
     self.position_key = generate_position_key(definitions, self);
   }
