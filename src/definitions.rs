@@ -476,6 +476,14 @@ impl Definitions {
     self.piece_color
   }
 
+  pub fn files_board(&self) -> [i32; BOARD_SQUARE_NUMBER] {
+    self.files_board
+  }
+
+  pub fn ranks_board(&self) -> [i32; BOARD_SQUARE_NUMBER] {
+    self.ranks_board
+  }
+
   pub fn init(&mut self) {
     self.init_squares();
     self.init_masks();
