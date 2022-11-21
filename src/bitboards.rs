@@ -60,11 +60,14 @@ pub fn print_bitboard(definitions: &Definitions, bitboard: u64) {
  * This is necessary because Rust do not allow to overflow a type size as C does.
  */
 fn get_overflow_as_32_bit(number: u64) -> u64 {
+  return number & 0xffffffff;
+  /*
   if (number & 0x80000000) != 0 {
-    return (((number as i64 & 0xFFFFFFFF) + 1) * (-1)) as u64;
+    return (((number as i64 & 0xffffffff) + 1) * (-1)) as u64;
   } else {
-    return number & 0xFFFFFFFF;
+    return number & 0xffffffff;
   }
+  */
 }
 
 /**
