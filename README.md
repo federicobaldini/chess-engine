@@ -2,7 +2,7 @@
 
 A quite complex command-line application that play chess, and allows a player to play against it, using Rust.
 
-Credit: https://twitter.com/BluefeverSoft and https://www.youtube.com/watch?v=bGAfaepBco4&list=PLZ1QII7yudbc-Ky058TEaOstZHVbT-2hg&index=1
+Credit: https://twitter.com/BluefeverSoft
 
 ## Requirements
 
