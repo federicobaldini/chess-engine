@@ -96,7 +96,7 @@ impl PartialEq for ChessboardRanks {
   }
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Colors {
   White, Black, Both
 }
