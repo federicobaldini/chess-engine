@@ -4,7 +4,8 @@ use crate::file_rank_to_square_120;
 use crate::hashkeys::*;
 
 #[derive(Copy, Clone)]
-pub struct Board {
+pub struct Board<'def> {
+  definitions: &'def Definitions,
   /**
    * It contains the whole chess board squares, and for each square contains the chess piece on it (Empty if none).
    */
@@ -78,8 +79,8 @@ pub struct Board {
   pieces_list: [[i32; 10]; 13],
 }
 
-impl Board {
-  pub fn new() -> Board {
+impl<'def> Board<'def> {
+  pub fn new(definitions: &Definitions) -> Board {
     let pieces: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
     let pawns: [u64; 3] = [0; 3];
     let king_square: [Squares; 2] = [Squares::NoSquare; 2];
@@ -102,6 +103,7 @@ impl Board {
     ];
 
     Board {
+      definitions,
       pieces,
       pawns,
       king_square,
@@ -142,10 +144,10 @@ impl Board {
     self.castel_permission
   }
 
-  pub fn reset_board(&mut self, definitions: &Definitions) {
+  pub fn reset_board(&mut self) {
     self.pieces = [Squares::OffBoard as i32; BOARD_SQUARE_NUMBER];
     for index in 0..64 {
-      self.pieces[definitions.board_64_squares_in_120_squares_notation()[index] as usize] =
+      self.pieces[self.definitions.board_64_squares_in_120_squares_notation()[index] as usize] =
         Pieces::Empty as i32;
     }
     self.big_pieces_number = [0; 2];
@@ -164,7 +166,7 @@ impl Board {
   }
 
   // fen = Forsyth–Edwards Notation
-  pub fn parse_fen(&mut self, definitions: &Definitions, fen: &str) {
+  pub fn parse_fen(&mut self, fen: &str) {
     let mut rank: ChessboardRanks = ChessboardRanks::R8;
     let mut file: ChessboardFiles = ChessboardFiles::A;
     let mut piece: Pieces = Pieces::Empty;
@@ -176,7 +178,7 @@ impl Board {
     let mut stop: bool = false;
     let mut index: i32 = 0;
 
-    self.reset_board(definitions);
+    self.reset_board();
 
     while (rank as i32 >= ChessboardRanks::R1 as i32) && fen_char != ' ' {
       count = 1;
@@ -212,7 +214,8 @@ impl Board {
         */
         for _ in 0..count {
           square_64 = rank as i32 * 8 + file as i32;
-          square_120 = definitions.board_64_squares_in_120_squares_notation()[square_64 as usize];
+          square_120 =
+            self.definitions.board_64_squares_in_120_squares_notation()[square_64 as usize];
           if piece != Pieces::Empty {
             self.pieces[square_120 as usize] = piece as i32;
           }
@@ -262,11 +265,11 @@ impl Board {
       self.en_passant_square =
         Squares::from_u32(file_rank_to_square_120!(file as i32, rank as i32) as u32);
     }
-    self.position_key = generate_position_key(definitions, self);
-    self.update_lists_material(definitions);
+    self.position_key = generate_position_key(self.definitions, self);
+    self.update_lists_material();
   }
 
-  pub fn print_board(&self, definitions: &Definitions) {
+  pub fn print_board(&self) {
     let mut piece: i32;
     let mut square_120: i32;
 
@@ -276,7 +279,7 @@ impl Board {
       for file in ChessboardFiles::A as i32..=ChessboardFiles::H as i32 {
         square_120 = file_rank_to_square_120!(file, rank);
         piece = self.pieces[square_120 as usize];
-        print!("{}   ", definitions.piece_characters()[piece as usize]);
+        print!("{}   ", self.definitions.piece_characters()[piece as usize]);
       }
       println!();
     }
@@ -289,7 +292,7 @@ impl Board {
 
     println!(
       "side:{}",
-      definitions.side_characters()[self.side() as usize]
+      self.definitions.side_characters()[self.side() as usize]
     );
     println!("enPas:{}", self.en_passant_square as i32);
     println!(
@@ -318,7 +321,7 @@ impl Board {
     println!("{:X?}", self.position_key);
   }
 
-  pub fn update_lists_material(&mut self, definitions: &Definitions) {
+  pub fn update_lists_material(&mut self) {
     let mut piece: Pieces;
     let mut color: Colors;
 
@@ -326,19 +329,19 @@ impl Board {
       if self.pieces[square_120 as usize] != Squares::OffBoard as i32 {
         piece = Pieces::from_u32(self.pieces[square_120 as usize] as u32);
         if piece != Pieces::Empty {
-          color = definitions.piece_color()[piece as usize];
+          color = self.definitions.piece_color()[piece as usize];
 
-          if definitions.piece_big()[piece as usize] == true {
+          if self.definitions.piece_big()[piece as usize] == true {
             self.big_pieces_number[color as usize] += 1;
           }
-          if definitions.piece_major()[piece as usize] == true {
+          if self.definitions.piece_major()[piece as usize] == true {
             self.major_pieces_number[color as usize] += 1;
           }
-          if definitions.piece_minor()[piece as usize] == true {
+          if self.definitions.piece_minor()[piece as usize] == true {
             self.minor_pieces_number[color as usize] += 1;
           }
 
-          self.material[color as usize] += definitions.piece_value()[piece as usize];
+          self.material[color as usize] += self.definitions.piece_value()[piece as usize];
           self.pieces_list[piece as usize][self.actual_pieces_number[piece as usize] as usize] =
             piece as i32;
           self.actual_pieces_number[piece as usize] += 1;
@@ -352,25 +355,25 @@ impl Board {
 
           if piece == Pieces::Wp {
             set_bit_to_bitboard(
-              definitions,
+              self.definitions,
               &mut self.pawns[Colors::White as usize],
-              definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
+              self.definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
             );
             set_bit_to_bitboard(
-              definitions,
+              self.definitions,
               &mut self.pawns[Colors::Both as usize],
-              definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
+              self.definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
             );
           } else if piece == Pieces::Bp {
             set_bit_to_bitboard(
-              definitions,
+              self.definitions,
               &mut self.pawns[Colors::Black as usize],
-              definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
+              self.definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
             );
             set_bit_to_bitboard(
-              definitions,
+              self.definitions,
               &mut self.pawns[Colors::Both as usize],
-              definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
+              self.definitions.board_120_squares_in_64_squares_notation()[square_120 as usize],
             );
           }
         }
