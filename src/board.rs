@@ -381,3 +381,215 @@ impl<'def> Board<'def> {
     }
   }
 }
+
+#[cfg(test)]
+mod tests {
+  use super::Board;
+  use crate::{
+    bitboards::{count_bits, pop_first_bit},
+    definitions::{ChessboardRanks, Colors, Definitions, Pieces, Squares},
+    hashkeys::generate_position_key,
+  };
+
+  #[test]
+  fn test_parse_fen() {
+    let test_fen: &str = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
+    let mut definitions: Definitions = Definitions::new();
+    definitions.init();
+    let mut board: Board = Board::new(&definitions);
+
+    board.parse_fen(test_fen);
+
+    let mut temp_big_piece: [i32; 2] = [0; 2];
+    let mut temp_major_piece: [i32; 2] = [0; 2];
+    let mut temp_minor_piece: [i32; 2] = [0; 2];
+    let mut temp_material: [i32; 3] = [0; 3];
+    let mut temp_pawns: [u64; 3] = [0; 3];
+    let mut temp_actual_piece_number: [i32; 13] = [0; 13];
+    let mut temp_piece: i32;
+    let mut piece_count: i32;
+    let mut square_120: i32;
+    let mut square_64: i32;
+    let mut color: Colors;
+
+    temp_pawns[Colors::White as usize] = board.pawns[Colors::White as usize];
+    temp_pawns[Colors::Black as usize] = board.pawns[Colors::Black as usize];
+    temp_pawns[Colors::Both as usize] = board.pawns[Colors::Both as usize];
+
+    // Check piece list
+    for piece in Pieces::Wp as i32..=Pieces::Bk as i32 {
+      for actual_piece_number in 0..board.actual_pieces_number[piece as usize] {
+        square_120 = board.pieces_list[piece as usize][actual_piece_number as usize];
+        // If the "piece" is a white pawn, so the "square_120" has to be a white pawn
+        if square_120 != piece {
+          panic!(
+            "Error: {} != {}, board.pieces_list is not aligned",
+            square_120, piece
+          );
+        }
+      }
+    }
+
+    // Check piece count and other counters
+    for square_64 in 0..64 {
+      square_120 = definitions.board_64_squares_in_120_squares_notation()[square_64];
+      temp_piece = board.pieces[square_120 as usize];
+      temp_actual_piece_number[temp_piece as usize] += 1;
+      color = definitions.piece_color()[temp_piece as usize];
+      if definitions.piece_big()[temp_piece as usize] == true {
+        temp_big_piece[color as usize] += 1;
+      }
+      if definitions.piece_major()[temp_piece as usize] == true {
+        temp_major_piece[color as usize] += 1;
+      }
+      if definitions.piece_minor()[temp_piece as usize] == true {
+        temp_minor_piece[color as usize] += 1;
+      }
+      temp_material[color as usize] += definitions.piece_value()[temp_piece as usize];
+    }
+
+    for piece in Pieces::Wp as i32..=Pieces::Bk as i32 {
+      // The number of pieces that have been found on the board, have to be equal to the actual pieces number
+      if temp_actual_piece_number[piece as usize] != board.actual_pieces_number[piece as usize] {
+        panic!(
+          "Error: {} != {}, board.actual_pieces_number is not aligned",
+          temp_actual_piece_number[piece as usize], board.actual_pieces_number[piece as usize]
+        );
+      }
+    }
+
+    // Check bitboards count
+    piece_count = count_bits(temp_pawns[Colors::White as usize]) as i32;
+    if piece_count != board.actual_pieces_number[Pieces::Wp as usize] {
+      panic!(
+        "Error: {} != {}, board.actual_pieces_number is not aligned",
+        piece_count,
+        board.actual_pieces_number[Pieces::Wp as usize]
+      );
+    }
+    piece_count = count_bits(temp_pawns[Colors::Black as usize]) as i32;
+    if piece_count != board.actual_pieces_number[Pieces::Bp as usize] {
+      panic!(
+        "Error: {} != {}, board.actual_pieces_number is not aligned",
+        piece_count,
+        board.actual_pieces_number[Pieces::Bp as usize]
+      );
+    }
+    piece_count = count_bits(temp_pawns[Colors::Both as usize]) as i32;
+    if piece_count
+      != (board.actual_pieces_number[Pieces::Bp as usize]
+        + board.actual_pieces_number[Pieces::Wp as usize])
+    {
+      panic!(
+        "Error: {} != {}, board.actual_pieces_number is not aligned",
+        piece_count,
+        (board.actual_pieces_number[Pieces::Bp as usize]
+          + board.actual_pieces_number[Pieces::Wp as usize])
+      );
+    }
+
+    // Check bitboards square
+    while temp_pawns[Colors::White as usize] != 0 {
+      square_64 = pop_first_bit(&mut temp_pawns[Colors::White as usize]);
+      if board.pieces
+        [definitions.board_64_squares_in_120_squares_notation()[square_64 as usize] as usize]
+        != Pieces::Wp as i32
+      {
+        panic!(
+          "Error: {} != {}, board.pieces is not aligned",
+          board.pieces
+            [definitions.board_64_squares_in_120_squares_notation()[square_64 as usize] as usize],
+          Pieces::Wp as i32
+        );
+      }
+    }
+
+    while temp_pawns[Colors::Black as usize] != 0 {
+      square_64 = pop_first_bit(&mut temp_pawns[Colors::Black as usize]);
+      if board.pieces
+        [definitions.board_64_squares_in_120_squares_notation()[square_64 as usize] as usize]
+        != Pieces::Bp as i32
+      {
+        panic!(
+          "Error: {} != {}, board.pieces is not aligned",
+          board.pieces
+            [definitions.board_64_squares_in_120_squares_notation()[square_64 as usize] as usize],
+          Pieces::Bp as i32
+        );
+      }
+    }
+
+    while temp_pawns[Colors::Both as usize] != 0 {
+      square_64 = pop_first_bit(&mut temp_pawns[Colors::Both as usize]);
+      if board.pieces
+        [definitions.board_64_squares_in_120_squares_notation()[square_64 as usize] as usize]
+        != Pieces::Bp as i32
+        && board.pieces
+          [definitions.board_64_squares_in_120_squares_notation()[square_64 as usize] as usize]
+          != Pieces::Wp as i32
+      {
+        panic!(
+          "Error: {} != {} && {} != {}, board.pieces is not aligned",
+          board.pieces
+            [definitions.board_64_squares_in_120_squares_notation()[square_64 as usize] as usize],
+          Pieces::Bp as i32,
+          board.pieces
+            [definitions.board_64_squares_in_120_squares_notation()[square_64 as usize] as usize],
+          Pieces::Wp as i32,
+        );
+      }
+    }
+
+    // Check the material
+    if temp_material[Colors::White as usize] != board.material[Colors::White as usize]
+      || temp_material[Colors::Black as usize] != board.material[Colors::Black as usize]
+    {
+      panic!("Error: board.material is not aligned")
+    }
+    if temp_big_piece[Colors::White as usize] != board.big_pieces_number[Colors::White as usize]
+      || temp_big_piece[Colors::Black as usize] != board.big_pieces_number[Colors::Black as usize]
+    {
+      panic!("Error: board.big_pieces_number is not aligned")
+    }
+    if temp_major_piece[Colors::White as usize] != board.major_pieces_number[Colors::White as usize]
+      || temp_major_piece[Colors::Black as usize]
+        != board.major_pieces_number[Colors::Black as usize]
+    {
+      panic!("Error: board.major_pieces_number is not aligned")
+    }
+    if temp_minor_piece[Colors::White as usize] != board.minor_pieces_number[Colors::White as usize]
+      || temp_minor_piece[Colors::Black as usize]
+        != board.minor_pieces_number[Colors::Black as usize]
+    {
+      panic!("Error: board.minor_pieces_number is not aligned")
+    }
+
+    // Check the side and position key
+    if board.side != Colors::White && board.side != Colors::Black {
+      panic!("Error: board.side is not aligned")
+    }
+    if generate_position_key(board.definitions, &board) != board.position_key {
+      panic!("Error: board.position_key is not aligned")
+    }
+
+    // Check en passant square
+    if !(board.en_passant_square == Squares::NoSquare
+      || (definitions.ranks_board()[board.en_passant_square as usize]
+        == ChessboardRanks::R6 as i32
+        && board.side == Colors::White)
+      || (definitions.ranks_board()[board.en_passant_square as usize]
+        == ChessboardRanks::R3 as i32
+        && board.side == Colors::Black))
+    {
+      panic!("Error: board.en_passant_square is not aligned")
+    }
+
+    // Check king square
+    if board.pieces[board.king_square[Colors::White as usize] as usize] != Pieces::Wk as i32 {
+      panic!("Error: board.king_square white is not aligned")
+    }
+    if board.pieces[board.king_square[Colors::Black as usize] as usize] != Pieces::Bk as i32 {
+      panic!("Error: self.king_square black is not aligned")
+    }
+  }
+}
