@@ -5,7 +5,9 @@ use crate::file_rank_to_square_120;
  * References:
  * https://www.chessprogramming.org/Looking_for_Magics;
  * https://stackoverflow.com/questions/30680559/how-to-find-magic-bitboards
- * I will explain this constant if I will use it later.
+ *
+ * The BIT_TABLE is an array of integers representing the index of the least significant bit in a bitboard,
+ * it's used to quickly determine the position of the least significant bit (LSB) in a bitboard.
  */
 const BIT_TABLE: [i32; 64] = [
   63, 30, 3, 32, 25, 41, 22, 33, 15, 50, 42, 13, 11, 53, 19, 34, 61, 29, 2, 51, 21, 43, 45, 10, 18,
@@ -64,13 +66,12 @@ fn get_overflow_as_32_bit(number: u64) -> u32 {
 }
 
 /**
- * It takes the first bit starting at the least significant bit in a bitboard and
- * return the index that this bit was set at, so we know which square that bit was set on.
- * Then that bit is set to zero.
  * References:
  * https://www.chessprogramming.org/Looking_for_Magics;
  * https://stackoverflow.com/questions/30680559/how-to-find-magic-bitboards
- * I will explain this function line by line if I will use it later.
+ *
+ * It takes the first bit starting at the least significant bit in a bitboard and
+ * return the index that this bit was set at, then that bit is set to zero.
  */
 pub fn pop_first_bit(bitboard: &mut u64) -> i32 {
   let b: u64 = *bitboard ^ (*bitboard - 1);
