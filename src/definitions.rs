@@ -1,10 +1,80 @@
 use rand::Rng;
 
+/* CONSTANTS */
+
 pub const PROGRAM_NAME: &str = "Rust Chess Engine";
 pub const BOARD_SQUARE_NUMBER: usize = 120;
 pub const MAX_GAME_HALF_MOVES: usize = 2048;
 // https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
 pub const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
+pub const PIECE_CHARACTERS: [char; 13] = [
+  '.', 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k',
+];
+pub const SIDE_CHARACTERS: [char; 3] = ['w', 'b', '-'];
+pub const RANK_CHARACTERS: [char; 8] = ['1', '2', '3', '4', '5', '6', '7', '8'];
+pub const FILE_CHARACTERS: [char; 8] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
+// (index)pieces = (0) None / White: (1)pawn, (2)knight, (3)bishop (4)rook (5)queen (6)king / Black: (7)pawn, (8)knight, (9)bishop (10)rook (11)queen (12)king
+pub const PIECE_BIG: [bool; 13] = [
+  false, false, true, true, true, true, true, false, true, true, true, true, true,
+];
+pub const PIECE_MAJOR: [bool; 13] = [
+  false, false, false, false, true, true, true, false, false, false, true, true, true,
+];
+pub const PIECE_MINOR: [bool; 13] = [
+  false, false, true, true, false, false, false, false, true, true, false, false, false,
+];
+pub const PIECE_VALUE: [i32; 13] = [
+  0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000,
+];
+pub const PIECE_COLOR: [Colors; 13] = [
+  Colors::Both,
+  Colors::White,
+  Colors::White,
+  Colors::White,
+  Colors::White,
+  Colors::White,
+  Colors::White,
+  Colors::Black,
+  Colors::Black,
+  Colors::Black,
+  Colors::Black,
+  Colors::Black,
+  Colors::Black,
+];
+pub const PIECE_KNIGHT: [bool; 13] = [
+  false, false, true, false, false, false, false, false, true, false, false, false, false,
+];
+pub const PIECE_KING: [bool; 13] = [
+  false, false, false, false, false, false, true, false, false, false, false, false, true,
+];
+pub const PIECE_ROOK_QUEEN: [bool; 13] = [
+  false, false, false, false, true, true, false, false, false, false, true, true, false,
+];
+pub const PIECE_BISHOP_QUEEN: [bool; 13] = [
+  false, false, false, true, false, true, false, false, false, true, false, true, false,
+];
+
+/* MACROS */
+
+/**
+ * f -> board file
+ * r -> board rank
+ */
+#[macro_export]
+macro_rules! file_rank_to_square_120 {
+  ( $f:expr, $r:expr ) => {
+    (21 + $f) + ($r * 10)
+  };
+}
+
+/* FUNCTIONS */
+
+fn generate_random_chess_piece_hash() -> u64 {
+  let mut rng = rand::thread_rng();
+  rng.gen::<u64>()
+}
+
+/* STRUCTS (and their implementations) */
 
 // A square can be empty or contain a Wn (White kNight) chess piece for example
 #[derive(Copy, Clone)]
@@ -253,28 +323,6 @@ impl Undo {
   }
 }
 
-/* MACROS */
-
-/**
- * f -> board file
- * r -> board rank
- */
-#[macro_export]
-macro_rules! file_rank_to_square_120 {
-  ( $f:expr, $r:expr ) => {
-    (21 + $f) + ($r * 10)
-  };
-}
-
-/* FUNCTIONS */
-
-fn generate_random_chess_piece_hash() -> u64 {
-  let mut rng = rand::thread_rng();
-  rng.gen::<u64>()
-}
-
-/* GLOBALS */
-
 #[derive(Copy, Clone)]
 pub struct Definitions {
   /**
@@ -284,7 +332,7 @@ pub struct Definitions {
    *
    * Original structure of definitions.board_120_squares_in_64_squares_notation,
    * more like "board_120_squares_in_120_squares_notation" (as we play with black):
-   *      A    B    C    D    E    F    G    H
+   *          A    B    C    D    E    F    G    H
    *    000  001  002  003  004  005  006  007  008  009
    *    010  011  012  013  014  015  016  017  018  019
    * 1  020  021  022  023  024  025  026  027  028  029
@@ -319,15 +367,6 @@ pub struct Definitions {
   piece_keys: [[u64; 120]; 13],
   side_key: u64,
   castle_keys: [u64; 16],
-  piece_characters: [char; 13],
-  side_characters: [char; 3],
-  rank_characters: [char; 8],
-  file_characters: [char; 8],
-  piece_big: [bool; 13],
-  piece_major: [bool; 13],
-  piece_minor: [bool; 13],
-  piece_value: [i32; 13],
-  piece_color: [Colors; 13],
   /**
    * At given square, we want to know immediatly on which file the square is, so
    * we use this structure.
@@ -353,40 +392,7 @@ impl Definitions {
     ];
     let side_key: u64 = 0;
     let castle_keys: [u64; 16] = [0; 16];
-    let piece_characters: [char; 13] = [
-      '.', 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k',
-    ];
-    let side_characters: [char; 3] = ['w', 'b', '-'];
-    let rank_characters: [char; 8] = ['1', '2', '3', '4', '5', '6', '7', '8'];
-    let file_characters: [char; 8] = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h'];
-    // (index)pieces = (0) None / White: (1)pawn, (2)knight, (3)bishop (4)rook (5)queen (6)king / Black: (7)pawn, (8)knight, (9)bishop (10)rook (11)queen (12)king
-    let piece_big: [bool; 13] = [
-      false, false, true, true, true, true, true, false, true, true, true, true, true,
-    ];
-    let piece_major: [bool; 13] = [
-      false, false, false, false, true, true, true, false, false, false, true, true, true,
-    ];
-    let piece_minor: [bool; 13] = [
-      false, false, true, true, false, false, false, false, true, true, false, false, false,
-    ];
-    let piece_value: [i32; 13] = [
-      0, 100, 325, 325, 550, 1000, 50000, 100, 325, 325, 550, 1000, 50000,
-    ];
-    let piece_color: [Colors; 13] = [
-      Colors::Both,
-      Colors::White,
-      Colors::White,
-      Colors::White,
-      Colors::White,
-      Colors::White,
-      Colors::White,
-      Colors::Black,
-      Colors::Black,
-      Colors::Black,
-      Colors::Black,
-      Colors::Black,
-      Colors::Black,
-    ];
+
     let files_board: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
     let ranks_board: [i32; BOARD_SQUARE_NUMBER] = [0; BOARD_SQUARE_NUMBER];
 
@@ -398,15 +404,6 @@ impl Definitions {
       piece_keys,
       side_key,
       castle_keys,
-      piece_characters,
-      side_characters,
-      rank_characters,
-      file_characters,
-      piece_big,
-      piece_major,
-      piece_minor,
-      piece_value,
-      piece_color,
       files_board,
       ranks_board,
     }
@@ -438,42 +435,6 @@ impl Definitions {
 
   pub fn castle_keys(&self) -> [u64; 16] {
     self.castle_keys
-  }
-
-  pub fn piece_characters(&self) -> [char; 13] {
-    self.piece_characters
-  }
-
-  pub fn side_characters(&self) -> [char; 3] {
-    self.side_characters
-  }
-
-  pub fn rank_characters(&self) -> [char; 8] {
-    self.rank_characters
-  }
-
-  pub fn file_characters(&self) -> [char; 8] {
-    self.file_characters
-  }
-
-  pub fn piece_big(&self) -> [bool; 13] {
-    self.piece_big
-  }
-
-  pub fn piece_major(&self) -> [bool; 13] {
-    self.piece_major
-  }
-
-  pub fn piece_minor(&self) -> [bool; 13] {
-    self.piece_minor
-  }
-
-  pub fn piece_value(&self) -> [i32; 13] {
-    self.piece_value
-  }
-
-  pub fn piece_color(&self) -> [Colors; 13] {
-    self.piece_color
   }
 
   pub fn files_board(&self) -> [i32; BOARD_SQUARE_NUMBER] {
