@@ -6,7 +6,7 @@ pub fn generate_position_key(definitions: &Definitions, board: &Board) -> u64 {
   let mut piece: Pieces;
 
   for square_120 in 0..BOARD_SQUARE_NUMBER {
-    if board.pieces()[square_120 as usize] as u32 != Squares::OffBoard as u32 {
+    if board.pieces()[square_120 as usize] != Squares::OffBoard as i32 {
       piece = Pieces::from_u32(board.pieces()[square_120 as usize] as u32);
       if piece as u32 != Squares::NoSquare as u32 && piece != Pieces::Empty {
         final_key ^= definitions.piece_keys()[piece as usize][square_120 as usize];
