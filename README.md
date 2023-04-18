@@ -1,6 +1,6 @@
 # chess-engine
 
-A quite complex command-line application that play chess, and allows a player to play against it, using Rust.
+A command-line application that play chess till master level, and allows a player to play against it, using Rust.
 
 Credit: https://twitter.com/BluefeverSoft
 
