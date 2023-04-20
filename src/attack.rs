@@ -44,3 +44,85 @@ pub fn show_squares_attacked_by_side(side: Colors, board: &Board) {
   }
   println!("\n");
 }
+
+// The side required is the attacking one
+pub fn square_attacked(square_120: i32, side: Colors, board: &Board) -> bool {
+  let mut attacking_piece: i32;
+  let mut current_direction: i32;
+  let mut temp_square: i32;
+
+  // pawns
+  if side == Colors::White {
+    if board.pieces()[(square_120 - 11) as usize] == Pieces::Wp as i32
+      || board.pieces()[(square_120 - 9) as usize] == Pieces::Wp as i32
+    {
+      return true;
+    }
+  } else if board.pieces()[(square_120 + 11) as usize] == Pieces::Bp as i32
+    || board.pieces()[(square_120 + 9) as usize] == Pieces::Bp as i32
+  {
+    return true;
+  }
+
+  // knights
+  for index in 0..8 {
+    attacking_piece = board.pieces()[(square_120 + KNIGHT_DIRECTIONS[index as usize]) as usize];
+    if attacking_piece != Squares::OffBoard as i32
+      && PIECE_KNIGHT[attacking_piece as usize]
+      && PIECE_COLOR[attacking_piece as usize] == side
+    {
+      return true;
+    }
+  }
+
+  // rooks, queens
+  for index in 0..4 {
+    current_direction = ROOK_DIRECTIONS[index];
+    temp_square = square_120 + current_direction;
+    attacking_piece = board.pieces()[temp_square as usize];
+    while attacking_piece != Squares::OffBoard as i32 {
+      if attacking_piece != Pieces::Empty as i32 {
+        if PIECE_ROOK_QUEEN[attacking_piece as usize]
+          && PIECE_COLOR[attacking_piece as usize] == side
+        {
+          return true;
+        }
+        break;
+      }
+      temp_square += current_direction;
+      attacking_piece = board.pieces()[temp_square as usize];
+    }
+  }
+
+  // bishops, queens
+  for index in 0..4 {
+    current_direction = BISHOP_DIRECTIONS[index];
+    temp_square = square_120 + current_direction;
+    attacking_piece = board.pieces()[temp_square as usize];
+    while attacking_piece != Squares::OffBoard as i32 {
+      if attacking_piece != Pieces::Empty as i32 {
+        if PIECE_BISHOP_QUEEN[attacking_piece as usize]
+          && PIECE_COLOR[attacking_piece as usize] == side
+        {
+          return true;
+        }
+        break;
+      }
+      temp_square += current_direction;
+      attacking_piece = board.pieces()[temp_square as usize];
+    }
+  }
+
+  // kings
+  for index in 0..8 {
+    attacking_piece = board.pieces()[(square_120 + KING_DIRECTION[index as usize]) as usize];
+    if attacking_piece != Squares::OffBoard as i32
+      && PIECE_KING[attacking_piece as usize]
+      && PIECE_COLOR[attacking_piece as usize] == side
+    {
+      return true;
+    }
+  }
+
+  return false;
+}
