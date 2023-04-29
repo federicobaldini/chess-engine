@@ -3,8 +3,8 @@ use crate::file_rank_to_square_120;
 
 /**
  * References:
- * https://www.chessprogramming.org/Looking_for_Magics;
- * https://stackoverflow.com/questions/30680559/how-to-find-magic-bitboards
+ * <https://www.chessprogramming.org/Looking_for_Magics>
+ * <https://stackoverflow.com/questions/30680559/how-to-find-magic-bitboards>
  *
  * The BIT_TABLE is an array of integers representing the index of the least significant bit in a bitboard,
  * it's used to quickly determine the position of the least significant bit (LSB) in a bitboard.
@@ -67,8 +67,8 @@ fn get_overflow_as_32_bit(number: u64) -> u32 {
 
 /**
  * References:
- * https://www.chessprogramming.org/Looking_for_Magics;
- * https://stackoverflow.com/questions/30680559/how-to-find-magic-bitboards
+ * <https://www.chessprogramming.org/Looking_for_Magics>
+ * <https://stackoverflow.com/questions/30680559/how-to-find-magic-bitboards>
  *
  * It takes the first bit starting at the least significant bit in a bitboard and
  * return the index that this bit was set at, then that bit is set to zero.

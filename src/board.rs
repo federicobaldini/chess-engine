@@ -71,7 +71,7 @@ pub struct Board<'a> {
    * It's an array of 13 piece types, eachone contains the list of pieces (10).
    * Why ten elements? Because for example at the start of the game you have 2 rooks, assumed
    * that you promote all the pawns at rook, you can have at maximum 10 equal pieces.
-   * Use case: to set the first white knight to E3 -> pieces_list[Pieces::Wn][0] = ChessboardFiles::E + ChessboardRanks::R3
+   * Use case: to set the first white knight to E3 -> pieces_list\[Pieces::Wn\]\[0\] = ChessboardFiles::E + ChessboardRanks::R3
    * This structure is more usefull (in some cases) that Definitions::pieces because here we have
    * less empty squares and to get all the pieces on the board is sufficient to loop every piece type untill
    * we get NoSquare as square value. So it's increment the performance of the search move engine.
