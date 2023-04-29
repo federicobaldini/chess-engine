@@ -5,7 +5,7 @@ use rand::Rng;
 pub const PROGRAM_NAME: &str = "Rust Chess Engine";
 pub const BOARD_SQUARE_NUMBER: usize = 120;
 pub const MAX_GAME_HALF_MOVES: usize = 2048;
-// https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation
+// <https://en.wikipedia.org/wiki/Forsyth%E2%80%93Edwards_Notation>
 pub const START_FEN: &str = "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1";
 pub const PIECE_CHARACTERS: [char; 13] = [
   '.', 'P', 'N', 'B', 'R', 'Q', 'K', 'p', 'n', 'b', 'r', 'q', 'k',
@@ -278,6 +278,98 @@ pub enum Castle {
   WhiteQueenSideCastel = 2,
   BlackKingSideCastel = 4,
   BlackQueenSideCastel = 8,
+}
+pub struct Move {
+  /* 'move' is a reserved keyword in Rust */
+  mov_e: i32,
+  score: i32,
+}
+
+/**
+ *     A  B  C  D  E  F  G  H
+ * 1  21 22 23 24 25 26 27 28
+ * 2  31 32 33 34 35 36 37 38
+ * 3  41 42 43 44 45 46 47 48
+ * 4  51 52 53 54 55 56 57 58
+ * 5  61 62 63 64 65 66 67 68
+ * 6  71 72 73 74 75 76 77 78
+ * 7  81 82 83 84 85 86 87 88
+ * 8  91 92 93 94 95 96 97 98
+ *
+ * 7 bits are sufficient to index a square ranging from 21 to 98:
+ * 21 = 001 0101 / 98 = 110 0010
+ *
+ * The 28 bits of the "move" are used in this way:
+ *
+ * the first 7 bits to indicate the starting square of the move
+ * 0000 0000 0000 0000 0000 0111 1111 -> From 0x7F
+ *
+ * the bits from 8 to 14 to indicate the ending square of the move
+ * 0000 0000 0000 0011 1111 1000 0000 -> To >> 7, 0x7F
+ *
+ * the bits from 15 to 18 to indicate if a piece has been captured with this move
+ * 0000 0000 0011 1100 0000 0000 0000 -> Captured >> 14, 0xF
+ *
+ * the 19 bit to indicate if it is an "en passant" move
+ * 0000 0000 0100 0000 0000 0000 0000 -> EP 0x40000
+ *
+ * the 20 bit to indicate if it is a "pawn start" move
+ * 0000 0000 1000 0000 0000 0000 0000 -> Pawn start 0x80000
+ *
+ * the bits from 21 to 24 to indicate in which piece I have promoted a pawn
+ * 0000 1111 0000 0000 0000 0000 0000 -> Promoted >> 20, 0xF
+ *
+ * the 25 bit to indicate if it is a "Castle" move
+ * 0001 0000 0000 0000 0000 0000 0000 -> Castle 0x1000000
+ */
+impl Move {
+  pub fn new(mov_e: i32, score: i32) -> Move {
+    Move { mov_e, score }
+  }
+
+  pub fn mov_e(&self) -> i32 {
+    self.mov_e
+  }
+
+  pub fn set_mov_e(&mut self, mov_e: i32) {
+    self.mov_e = mov_e;
+  }
+
+  pub fn from_square(&self) -> i32 {
+    self.mov_e & 0x7F
+  }
+
+  pub fn to_square(&self) -> i32 {
+    (self.mov_e >> 7) & 0x7F
+  }
+
+  pub fn captured_piece(&self) -> i32 {
+    (self.mov_e >> 14) & 0xF
+  }
+
+  pub fn promoted(&self) -> i32 {
+    (self.mov_e >> 20) & 0xF
+  }
+
+  pub fn captured_piece_with_en_passant(&self) -> i32 {
+    self.mov_e & 0x7C000
+  }
+
+  pub fn promotion(&self) -> i32 {
+    self.mov_e & 0xF00000
+  }
+
+  pub fn en_passant(&self) -> i32 {
+    self.mov_e & 0x40000
+  }
+
+  pub fn pawn_start(&self) -> i32 {
+    self.mov_e & 0x80000
+  }
+
+  pub fn castle(&self) -> i32 {
+    self.mov_e & 0x1000000
+  }
 }
 
 #[derive(Copy, Clone)]
